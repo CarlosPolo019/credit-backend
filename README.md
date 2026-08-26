@@ -188,7 +188,19 @@ docker build -t credit-backend:local .   # Maven + Java 21 inside the image
 
 ## Deploy
 
-Render should provide environment variables from `.env.example`. The free tier may sleep; pending email jobs stay persisted in Firestore and are picked up after restart. Details: [`docs/deployment.md`](docs/deployment.md).
+Production is Render, served at the custom domain `https://fyatest-api.cmescorcia.com` (not the default `*.onrender.com` URL). **Deploys are manual, not automatic on push** — same pattern as `credit-web`.
+
+```mermaid
+flowchart LR
+  dev["git push main"] --> ci["Backend CI<br/>(runs on every push)"]
+  operator["Someone clicks<br/>Run workflow"] --> deploy["Deploy Backend action"]
+  deploy -->|POST Render Deploy Hook| render["Render redeploys<br/>credit-backend"]
+  render --> prod["fyatest-api.cmescorcia.com"]
+```
+
+To ship: GitHub → **Actions** → **Deploy Backend** → **Run workflow** (branch `main`). Render's own Auto-Deploy is turned off, so this is the only thing that reaches production.
+
+Render should provide environment variables from `.env.example`. The free tier may sleep; pending email jobs stay persisted in Firestore and are picked up after restart. Details (including the custom domain and Deploy Hook setup): [`docs/deployment.md`](docs/deployment.md).
 
 ## Documentation Map
 
