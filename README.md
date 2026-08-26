@@ -1,27 +1,41 @@
 # Credit Backend
 
-Spring Boot API for the Fya Social Capital credit technical test — auth, credit registration/query, and async email notifications.
+API en Spring Boot para la prueba técnica de créditos de Fya Social Capital — autenticación, registro/consulta de créditos y notificaciones por correo asíncronas.
 
-## Sobre esta prueba técnica
+## Demo En Vivo
 
-Este repo es **uno de los tres entregables independientes** de la prueba técnica de créditos:
+No hace falta instalar nada para probar la API — ya está desplegada:
+
+- **API**: `https://fyatest-api.cmescorcia.com`
+- **Swagger UI**: **[https://fyatest-api.cmescorcia.com/swagger-ui/index.html](https://fyatest-api.cmescorcia.com/swagger-ui/index.html)** — probá los endpoints directo desde el navegador
+- **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health)
+
+![Swagger UI](docs/screenshots/swagger-ui.png)
+
+Para autenticarte en Swagger: `POST /api/v1/auth/login` con una de las cédulas sembradas (`900100001` / `demo12345`, ver tabla en [Seed](#seed)), copiá el `token` de la respuesta, y pegalo en el botón **Authorize** (arriba a la derecha) como `Bearer <token>`.
+
+Esta misma API es la que consumen `credit-web` ([demo en vivo](../credit-web/README.md#demo-en-vivo)) y `credit-mobile`. Para correr el backend en tu máquina en vez de usar la demo: [Instalación Local](#instalación-local).
+
+## Sobre Esta Prueba Técnica
+
+Este repo es uno de los tres entregables independientes de la prueba técnica de créditos:
 
 | Repo | Rol | README |
 |---|---|---|
 | `credit-backend` (este repo) | API REST, persistencia en Firestore, seguridad JWT, rate limit, worker de correo | — |
-| `credit-web` | Panel administrativo (React) para registrar/consultar créditos y monitorear correos | [`../credit-web/README.md`](../credit-web/README.md) |
-| `credit-mobile` | App Android (React Native) para el comercial en campo | [`../credit-mobile/README.md`](../credit-mobile/README.md) |
+| `credit-web` | Panel administrativo para registrar/consultar créditos y monitorear correos | [`../credit-web/README.md`](../credit-web/README.md) |
+| `credit-mobile` | App Android para el comercial en campo | [`../credit-mobile/README.md`](../credit-mobile/README.md) |
 
 Los tres consumen esta misma API — no hay lógica de negocio duplicada en los frontends.
 
-## Architecture
+## Arquitectura
 
 ```mermaid
 flowchart LR
   web["credit-web<br/>React admin"] -->|REST + JWT| api["credit-backend<br/>Spring Boot"]
   mobile["credit-mobile<br/>React Native"] -->|REST + JWT| api
   api --> firestore[("Cloud Firestore")]
-  api -->|queues EmailJob| worker["Email Worker<br/>(scheduled)"]
+  api -->|encola EmailJob| worker["Email Worker<br/>(programado)"]
   worker --> mailgun["Mailgun"]
 ```
 
@@ -64,27 +78,27 @@ sequenceDiagram
 
 ## Stack
 
-| Layer | Tech |
+| Capa | Tecnología |
 |---|---|
 | Runtime | Java 21, Spring Boot 3.5.16 |
 | Web | Spring Web, Validation, Security, Scheduling, Actuator |
-| Data | Firebase Admin SDK + Cloud Firestore |
+| Datos | Firebase Admin SDK + Cloud Firestore |
 | Auth | JWT (JJWT) |
 | Rate limiting | Bucket4j |
-| Email | Mailgun REST API |
+| Correo | Mailgun REST API |
 | Docs | springdoc OpenAPI |
 
-## Requisitos Previos
+## Instalación Local
 
-| Herramienta | Versión | Notas |
-|---|---|---|
-| Java | 21 | No hay wrapper `mvnw`; se necesita Maven instalado, o usar Docker (ver abajo) |
-| Maven | 3.9+ | Solo si no usás Docker |
-| Docker | opcional | `docker build` ya resuelve Maven/Java 21 dentro de la imagen |
-| Proyecto Firebase | — | Con Firestore habilitado y un service account con permisos de lectura/escritura |
-| Cuenta Mailgun | opcional | Sandbox alcanza para probar el worker de correo |
+Solo necesario si querés correr el backend en tu máquina en vez de usar la [demo en vivo](#demo-en-vivo).
 
-## Instalación Paso A Paso
+### Requisitos Previos
+
+- Java 21 y Maven 3.9+ (no hay wrapper `mvnw`), **o** Docker — `docker build` resuelve Maven/Java 21 dentro de la imagen sin instalar nada local.
+- Un proyecto de Firebase con Firestore habilitado y un service account con permisos de lectura/escritura.
+- Cuenta de Mailgun (opcional; el sandbox alcanza para probar el worker de correo).
+
+### Paso A Paso
 
 1. **Cloná el repo y entrá a la carpeta:**
    ```bash
@@ -95,7 +109,7 @@ sequenceDiagram
    cp .env.example .env
    ```
    Como mínimo necesitás `JWT_SECRET` (32+ caracteres) y las credenciales de Firebase. El camino más simple es pegar el JSON completo del service account en `FIREBASE_SERVICE_ACCOUNT_JSON` (una sola variable) en vez de llenar `FIREBASE_CLIENT_EMAIL`/`FIREBASE_PRIVATE_KEY` por separado.
-3. **(Opcional) Sembrá datos de prueba** — ver [Seed](#seed) más abajo. Sin esto, el login solo funciona con el usuario demo.
+3. **(Opcional) Sembrá datos de prueba** — ver [Seed](#seed). Sin esto, el login solo funciona con el usuario demo.
 4. **Levantá el backend:**
    ```bash
    mvn spring-boot:run
@@ -112,52 +126,39 @@ sequenceDiagram
    Documentación interactiva en `http://localhost:8080/swagger-ui/index.html`.
 6. **Iniciá sesión** con un usuario sembrado (`900100001 / demo12345`) o con el usuario demo (`demo / demo12345`, activo cuando `DEMO_USER_PASSWORD_HASH` está vacío).
 
-Registered users log in with their cédula (`document`) and password.
-
 ## API
 
-All `/api/v1/credits/**` and `/api/v1/email-jobs/**` routes require `Authorization: Bearer <token>`.
+Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Authorization: Bearer <token>`.
 
-| Method | Path | Auth | Purpose |
+| Método | Ruta | Auth | Qué hace |
 |---|---|---|---|
-| POST | `/api/v1/auth/register` | Public | Create a user by cédula |
-| POST | `/api/v1/auth/login` | Public | Issue a JWT (cédula or demo user) |
-| POST | `/api/v1/credits` | Bearer | Register a credit; queues `EmailJob(PENDING)` |
-| GET | `/api/v1/credits` | Bearer | List active credits (filters + sort) |
-| GET | `/api/v1/credits/{id}` | Bearer | Get one active credit |
-| DELETE | `/api/v1/credits/{id}` | Bearer | Soft-delete a credit |
-| GET | `/api/v1/email-jobs` | Bearer | List notification jobs (status/search filters) |
-| GET | `/actuator/health` | Public | Health check |
-| GET | `/swagger-ui/index.html` | Public | Interactive API docs |
+| POST | `/api/v1/auth/register` | Pública | Crea un usuario por cédula |
+| POST | `/api/v1/auth/login` | Pública | Emite un JWT (cédula o usuario demo) |
+| POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)` |
+| GET | `/api/v1/credits` | Bearer | Lista créditos activos (filtros + orden) |
+| GET | `/api/v1/credits/{id}` | Bearer | Obtiene un crédito activo |
+| DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
+| GET | `/api/v1/email-jobs` | Bearer | Lista trabajos de correo (filtros de estado/búsqueda) |
+| GET | `/actuator/health` | Pública | Health check |
+| GET | `/swagger-ui/index.html` | Pública | Documentación interactiva |
 
-Full request/response shapes and error codes: [`docs/api.md`](docs/api.md).
+Formatos completos de request/response y códigos de error: [`docs/api.md`](docs/api.md).
 
 ## Firestore
 
-| Collection | Purpose |
+| Colección | Qué guarda |
 |---|---|
-| `users` | Registered accounts; login and credit-registration identity |
-| `credits` | Registered credits (soft-deleted via `isActive=false`) |
-| `email_jobs` | Notification queue processed by the scheduled worker |
+| `users` | Cuentas registradas; identidad para login y registro de créditos |
+| `credits` | Créditos registrados (borrado lógico vía `isActive=false`) |
+| `email_jobs` | Cola de notificaciones que procesa el worker programado |
 
-Details and field invariants: [`docs/firestore.md`](docs/firestore.md).
+Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).
 
 ## Email Worker
 
-`POST /credits` stores an `EmailJob(PENDING)` and returns `201` without waiting for Mailgun. A scheduled worker (`EMAIL_WORKER_ENABLED=true`) picks up eligible jobs and sends them, with quadratic backoff on retry.
+`POST /credits` guarda un `EmailJob(PENDING)` y responde `201` sin esperar a Mailgun. Un worker programado (`EMAIL_WORKER_ENABLED=true`) toma los trabajos elegibles y los envía, con backoff cuadrático en los reintentos.
 
-Required Mailgun variables:
-
-| Variable | Purpose |
-|---|---|
-| `MAILGUN_API_KEY` | Mailgun API key |
-| `MAILGUN_DOMAIN` | Sending domain |
-| `MAILGUN_BASE_URL` | API base URL |
-| `MAILGUN_FROM_EMAIL` | Sender address |
-| `MAILGUN_FROM_NAME` | Sender display name |
-| `CREDIT_NOTIFICATION_EMAIL` | Recipient for credit-registered notifications |
-
-Flow details: [`docs/email-worker.md`](docs/email-worker.md).
+Variables de Mailgun requeridas: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_BASE_URL`, `MAILGUN_FROM_EMAIL`, `MAILGUN_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
 
 ## Seed
 
@@ -167,15 +168,15 @@ npm install
 npm run seed
 ```
 
-Seeds the 10 annex credits (numeric client documents `100000001..100000010`) and 3 commercial login profiles:
+Siembra los 10 créditos del anexo (cédulas de cliente `100000001..100000010`) y 3 perfiles comerciales:
 
-| Document | Password | Name |
+| Cédula | Contraseña | Nombre |
 |---|---|---|
 | `900100001` | `demo12345` | Carlos Escorcia |
 | `900100002` | `demo12345` | Jennifer Navarro |
 | `900100003` | `demo12345` | Adriana Castellano |
 
-## Test & Build
+## Test Y Build
 
 ```bash
 mvn test
@@ -183,35 +184,33 @@ mvn package
 ```
 
 ```bash
-docker build -t credit-backend:local .   # Maven + Java 21 inside the image
+docker build -t credit-backend:local .   # Maven + Java 21 dentro de la imagen
 ```
 
 ## Deploy
 
-Production is Render, served at the custom domain `https://fyatest-api.cmescorcia.com` (not the default `*.onrender.com` URL). **Deploys are manual, not automatic on push** — same pattern as `credit-web`.
+Producción corre en Render bajo el dominio propio `https://fyatest-api.cmescorcia.com`. El deploy es manual, igual que en `credit-web`.
 
 ```mermaid
 flowchart LR
-  dev["git push main"] --> ci["Backend CI<br/>(runs on every push)"]
-  operator["Someone clicks<br/>Run workflow"] --> deploy["Deploy Backend action"]
-  deploy -->|POST Render Deploy Hook| render["Render redeploys<br/>credit-backend"]
+  dev["git push main"] --> ci["Backend CI<br/>(valida, no despliega)"]
+  operator["Run workflow<br/>(manual)"] --> deploy["Deploy Backend"]
+  deploy -->|POST Deploy Hook| render["Render redespliega"]
   render --> prod["fyatest-api.cmescorcia.com"]
 ```
 
-To ship: GitHub → **Actions** → **Deploy Backend** → **Run workflow** (branch `main`). Render's own Auto-Deploy is turned off, so this is the only thing that reaches production.
+Para desplegar: GitHub → **Actions** → **Deploy Backend** → **Run workflow**. Detalles (secrets, dominio/DNS, variables de Render): [`docs/deployment.md`](docs/deployment.md).
 
-Render should provide environment variables from `.env.example`. The free tier may sleep; pending email jobs stay persisted in Firestore and are picked up after restart. Details (including the custom domain and Deploy Hook setup): [`docs/deployment.md`](docs/deployment.md).
+## Mapa De Documentación
 
-## Documentation Map
-
-| File | Covers |
+| Archivo | Qué cubre |
 |---|---|
-| [`AGENTS.md`](AGENTS.md) | Working rules for agents in this repo |
-| [`docs/api.md`](docs/api.md) | HTTP contract and error codes |
-| [`docs/firestore.md`](docs/firestore.md) | Collections, fields, invariants |
-| [`docs/email-worker.md`](docs/email-worker.md) | Mailgun flow and retries |
-| [`docs/seed-firestore.md`](docs/seed-firestore.md) | Annex seed script |
-| [`docs/testing.md`](docs/testing.md) | Expected tests and environment gaps |
-| [`docs/deployment.md`](docs/deployment.md) | Docker, Render, env vars |
-| [`docs/commit-guide.md`](docs/commit-guide.md) | Commit conventions |
-| [`document/agents/`](document/agents/) | Subagent playbooks, context, skill templates |
+| [`AGENTS.md`](AGENTS.md) | Reglas de trabajo para agentes en este repo |
+| [`docs/api.md`](docs/api.md) | Contrato HTTP y códigos de error |
+| [`docs/firestore.md`](docs/firestore.md) | Colecciones, campos, invariantes |
+| [`docs/email-worker.md`](docs/email-worker.md) | Flujo de Mailgun y reintentos |
+| [`docs/seed-firestore.md`](docs/seed-firestore.md) | Script de seed del anexo |
+| [`docs/testing.md`](docs/testing.md) | Pruebas esperadas y limitaciones del entorno |
+| [`docs/deployment.md`](docs/deployment.md) | Docker, Render, dominio, variables |
+| [`docs/commit-guide.md`](docs/commit-guide.md) | Convenciones de commit |
+| [`document/agents/`](document/agents/) | Playbooks de subagentes, contexto, templates |
