@@ -137,6 +137,7 @@ Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Aut
 | POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)` |
 | GET | `/api/v1/credits` | Bearer | Lista créditos activos (filtros + orden) |
 | GET | `/api/v1/credits/{id}` | Bearer | Obtiene un crédito activo |
+| PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito |
 | DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
 | GET | `/api/v1/email-jobs` | Bearer | Lista trabajos de correo (filtros de estado/búsqueda) |
 | GET | `/actuator/health` | Pública | Health check |
@@ -158,7 +159,9 @@ Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).
 
 `POST /credits` guarda un `EmailJob(PENDING)` y responde `201` sin esperar a Mailgun. Un worker programado (`EMAIL_WORKER_ENABLED=true`) toma los trabajos elegibles y los envía, con backoff cuadrático en los reintentos.
 
-Variables de Mailgun requeridas: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_BASE_URL`, `MAILGUN_FROM_EMAIL`, `MAILGUN_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
+El correo es HTML con la identidad visual de `credit-web` (verde `#00d280`, tinta `#052224`, logo) e incluye un botón que redirige a `APP_FRONTEND_BASE_URL/credits/{creditId}` para ver el detalle completo del crédito en el panel.
+
+Variables de Mailgun requeridas: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_BASE_URL`, `MAILGUN_FROM_EMAIL`, `MAILGUN_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`, `APP_FRONTEND_BASE_URL`. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
 
 ## Seed
 

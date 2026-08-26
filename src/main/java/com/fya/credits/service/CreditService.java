@@ -100,6 +100,33 @@ public class CreditService {
         .orElseThrow(() -> new NotFoundException("Crédito no disponible"));
   }
 
+  public CreditResponse update(String id, CreateCreditRequest request) {
+    Credit credit = creditRepository.findActiveById(id)
+        .orElseThrow(() -> new NotFoundException("Crédito no disponible"));
+    String clientFirstName = InputNormalizer.cleanText(request.clientFirstName());
+    String clientSecondName = InputNormalizer.cleanText(request.clientSecondName());
+    String clientFirstSurname = InputNormalizer.cleanText(request.clientFirstSurname());
+    String clientSecondSurname = InputNormalizer.cleanText(request.clientSecondSurname());
+    String clientDocument = numericDocument(request.clientDocument());
+    String clientName = joinName(clientFirstName, clientSecondName, clientFirstSurname, clientSecondSurname);
+
+    credit.setClientFirstName(clientFirstName);
+    credit.setClientSecondName(clientSecondName);
+    credit.setClientFirstSurname(clientFirstSurname);
+    credit.setClientSecondSurname(clientSecondSurname);
+    credit.setClientName(clientName);
+    credit.setClientNameNormalized(InputNormalizer.searchKey(credit.getClientName()));
+    credit.setClientDocument(clientDocument);
+    credit.setClientDocumentNormalized(InputNormalizer.searchKey(credit.getClientDocument()));
+    credit.setAmount(request.amount());
+    credit.setInterestRate(request.interestRate());
+    credit.setTermMonths(request.termMonths());
+    credit.setUpdatedAt(clock.instant());
+
+    Credit saved = creditRepository.save(credit);
+    return CreditResponse.from(saved);
+  }
+
   public void delete(String id) {
     Credit credit = creditRepository.findActiveById(id)
         .orElseThrow(() -> new NotFoundException("Crédito no disponible"));

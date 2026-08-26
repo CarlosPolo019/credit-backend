@@ -105,6 +105,11 @@ Direcciones:
 
 Auth requerida. Si el credito esta inactivo retorna `404`.
 
+## Editar Credito
+`PUT /api/v1/credits/{id}`
+
+Auth requerida. Mismo body que crear (`clientFirstName`, `clientSecondName`, `clientFirstSurname`, `clientSecondSurname`, `clientDocument`, `amount`, `interestRate`, `termMonths`). No permite cambiar el comercial (`salespersonName`/`registeredByUserId` quedan igual, son del registro original). Recalcula `clientName`/normalizados y `updatedAt`. Response `200`: `CreditResponse`.
+
 ## Borrar Credito
 `DELETE /api/v1/credits/{id}`
 

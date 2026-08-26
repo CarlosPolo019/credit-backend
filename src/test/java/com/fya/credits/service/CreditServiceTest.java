@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.fya.credits.dto.request.CreateCreditRequest;
 import com.fya.credits.exception.BadRequestException;
+import com.fya.credits.exception.NotFoundException;
 import com.fya.credits.model.Credit;
 import com.fya.credits.model.EmailJob;
 import com.fya.credits.model.AppUser;
@@ -110,6 +111,45 @@ class CreditServiceTest {
         10), "999999999"))
         .isInstanceOf(BadRequestException.class)
         .hasMessage("El usuario autenticado no está registrado");
+  }
+
+  @Test
+  void updatesEditableFieldsOfAnExistingCredit() {
+    Clock clock = Clock.fixed(Instant.parse("2026-08-25T20:00:00Z"), ZoneOffset.UTC);
+    CreditService service = new CreditService(
+        creditRepository, emailJobRepository, userRepository, clock, "fyasocialcapital@gmail.com");
+    Credit existing = new Credit();
+    existing.setId("credit-1");
+    existing.setSalespersonDocument("900100001");
+    existing.setSalespersonName("Carlos Escorcia");
+    existing.setIsActive(true);
+    existing.setCreatedAt(Instant.parse("2026-08-01T10:00:00Z"));
+    when(creditRepository.findActiveById("credit-1")).thenReturn(Optional.of(existing));
+    when(creditRepository.save(any(Credit.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    service.update("credit-1", new CreateCreditRequest(
+        "Pepito", "", "Perez", "", "100000001",
+        BigDecimal.valueOf(9000000), BigDecimal.valueOf(3), 12));
+
+    ArgumentCaptor<Credit> captor = ArgumentCaptor.forClass(Credit.class);
+    verify(creditRepository).save(captor.capture());
+    assertThat(captor.getValue().getAmount()).isEqualByComparingTo("9000000");
+    assertThat(captor.getValue().getTermMonths()).isEqualTo(12);
+    assertThat(captor.getValue().getClientName()).isEqualTo("Pepito Perez");
+    assertThat(captor.getValue().getSalespersonName()).isEqualTo("Carlos Escorcia");
+    assertThat(captor.getValue().getUpdatedAt()).isEqualTo(Instant.parse("2026-08-25T20:00:00Z"));
+  }
+
+  @Test
+  void rejectsUpdateWhenCreditDoesNotExist() {
+    CreditService service = new CreditService(
+        creditRepository, emailJobRepository, userRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+    when(creditRepository.findActiveById("missing")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> service.update("missing", new CreateCreditRequest(
+        "Pepito", "", "Perez", "", "100000001",
+        BigDecimal.valueOf(9000000), BigDecimal.valueOf(3), 12)))
+        .isInstanceOf(NotFoundException.class);
   }
 
   @Test
