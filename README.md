@@ -140,6 +140,7 @@ Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Aut
 | PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito |
 | DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
 | GET | `/api/v1/credits/{id}/audit` | Bearer | Historial de ediciones y borrado de un crédito |
+| GET | `/api/v1/credits/{id}/pdf` | Bearer | Certificado del crédito en PDF (mismo formato que la exportación de `credit-web`) |
 | GET | `/api/v1/email-jobs` | Bearer | Lista trabajos de correo (filtros de estado/búsqueda) |
 | GET | `/actuator/health` | Pública | Health check |
 | GET | `/swagger-ui/index.html` | Pública | Documentación interactiva |

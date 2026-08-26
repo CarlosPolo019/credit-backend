@@ -5,11 +5,15 @@ import com.fya.credits.dto.response.CreditAuditEntryResponse;
 import com.fya.credits.dto.response.CreditListResponse;
 import com.fya.credits.dto.response.CreditResponse;
 import com.fya.credits.exception.BadRequestException;
+import com.fya.credits.service.CreditPdfService;
 import com.fya.credits.service.CreditService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,9 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/credits")
 public class CreditController {
   private final CreditService creditService;
+  private final CreditPdfService creditPdfService;
 
-  public CreditController(CreditService creditService) {
+  public CreditController(CreditService creditService, CreditPdfService creditPdfService) {
     this.creditService = creditService;
+    this.creditPdfService = creditPdfService;
   }
 
   @Operation(summary = "Register a credit and queue its email notification")
@@ -86,5 +92,18 @@ public class CreditController {
   @GetMapping("/{id}/audit")
   public List<CreditAuditEntryResponse> listAudit(@PathVariable String id) {
     return creditService.listAudit(id);
+  }
+
+  @Operation(summary = "Download a credit as a branded PDF certificate")
+  @GetMapping("/{id}/pdf")
+  public ResponseEntity<byte[]> pdf(@PathVariable String id) {
+    CreditResponse credit = creditService.getActive(id);
+    byte[] pdf = creditPdfService.generate(credit);
+    String filename = "credito-" + credit.id() + ".pdf";
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment().filename(filename).build().toString())
+        .body(pdf);
   }
 }

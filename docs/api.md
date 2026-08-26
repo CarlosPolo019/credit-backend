@@ -141,6 +141,13 @@ Response `200`:
 
 `action` es `UPDATED` o `DELETED`. En `DELETED`, `changes` viene vacio (el registro completo ya quedo inactivo).
 
+## Exportar Credito A PDF
+`GET /api/v1/credits/{id}/pdf`
+
+Auth requerida. Genera en el servidor (OpenPDF) el mismo certificado de una pagina que `credit-web` genera en el cliente con jsPDF — mismos datos, mismos colores de marca. Pensado para `credit-mobile`, que no tiene una libreria de render de PDF: descarga el binario ya listo en vez de construirlo en el dispositivo.
+
+Response `200`: `application/pdf`, `Content-Disposition: attachment; filename="credito-{id}.pdf"`.
+
 ## Listar Trabajos De Correo
 `GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`
 
