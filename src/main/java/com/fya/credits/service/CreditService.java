@@ -11,6 +11,7 @@ import com.fya.credits.model.EmailJobStatus;
 import com.fya.credits.repository.CreditQuery;
 import com.fya.credits.repository.CreditRepository;
 import com.fya.credits.repository.EmailJobRepository;
+import com.fya.credits.repository.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -21,22 +22,28 @@ import org.springframework.stereotype.Service;
 public class CreditService {
   private final CreditRepository creditRepository;
   private final EmailJobRepository emailJobRepository;
+  private final UserRepository userRepository;
   private final Clock clock;
   private final String notificationEmail;
 
   public CreditService(
       CreditRepository creditRepository,
       EmailJobRepository emailJobRepository,
+      UserRepository userRepository,
       Clock clock,
       @Value("${app.mailgun.notification-email}") String notificationEmail) {
     this.creditRepository = creditRepository;
     this.emailJobRepository = emailJobRepository;
+    this.userRepository = userRepository;
     this.clock = clock;
     this.notificationEmail = notificationEmail;
   }
 
-  public CreditResponse create(CreateCreditRequest request) {
+  public CreditResponse create(CreateCreditRequest request, String authenticatedDocument) {
     Instant now = clock.instant();
+    String documentNormalized = InputNormalizer.searchKey(authenticatedDocument);
+    var salesperson = userRepository.findActiveByDocumentNormalized(documentNormalized)
+        .orElseThrow(() -> new BadRequestException("El usuario autenticado no está registrado"));
     String clientFirstName = InputNormalizer.cleanText(request.clientFirstName());
     String clientSecondName = InputNormalizer.cleanText(request.clientSecondName());
     String clientFirstSurname = InputNormalizer.cleanText(request.clientFirstSurname());
@@ -56,7 +63,10 @@ public class CreditService {
     credit.setAmount(request.amount());
     credit.setInterestRate(request.interestRate());
     credit.setTermMonths(request.termMonths());
-    credit.setSalespersonName(InputNormalizer.cleanText(request.salespersonName()));
+    credit.setRegisteredByUserId(salesperson.getId());
+    credit.setSalespersonDocument(salesperson.getDocument());
+    credit.setSalespersonDocumentNormalized(salesperson.getDocumentNormalized());
+    credit.setSalespersonName(salesperson.getFullName());
     credit.setSalespersonNameNormalized(InputNormalizer.searchKey(credit.getSalespersonName()));
     credit.setIsActive(true);
     credit.setCreatedAt(now);

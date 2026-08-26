@@ -87,7 +87,7 @@ public class CreditRepository {
   private boolean matches(Credit credit, CreditQuery query) {
     return contains(credit.getClientNameNormalized(), query.clientName())
         && contains(credit.getClientDocumentNormalized(), query.clientDocument())
-        && contains(credit.getSalespersonNameNormalized(), query.salesperson());
+        && salespersonContains(credit, query.salesperson());
   }
 
   private boolean contains(String field, String query) {
@@ -95,6 +95,15 @@ public class CreditRepository {
       return true;
     }
     return Optional.ofNullable(field).orElse("").contains(InputNormalizer.searchKey(query));
+  }
+
+  private boolean salespersonContains(Credit credit, String query) {
+    if (!StringUtils.hasText(query)) {
+      return true;
+    }
+    String searchKey = InputNormalizer.searchKey(query);
+    return Optional.ofNullable(credit.getSalespersonNameNormalized()).orElse("").contains(searchKey)
+        || Optional.ofNullable(credit.getSalespersonDocumentNormalized()).orElse("").contains(searchKey);
   }
 
   private Comparator<Credit> comparator(CreditQuery query) {
@@ -121,6 +130,9 @@ public class CreditRepository {
     values.put("amount", credit.getAmount().toPlainString());
     values.put("interestRate", credit.getInterestRate().toPlainString());
     values.put("termMonths", credit.getTermMonths());
+    values.put("registeredByUserId", credit.getRegisteredByUserId());
+    values.put("salespersonDocument", credit.getSalespersonDocument());
+    values.put("salespersonDocumentNormalized", credit.getSalespersonDocumentNormalized());
     values.put("salespersonName", credit.getSalespersonName());
     values.put("salespersonNameNormalized", credit.getSalespersonNameNormalized());
     values.put("isActive", credit.getIsActive());
@@ -145,6 +157,9 @@ public class CreditRepository {
     credit.setInterestRate(bigDecimal(snapshot.get("interestRate")));
     Long term = snapshot.getLong("termMonths");
     credit.setTermMonths(term == null ? null : term.intValue());
+    credit.setRegisteredByUserId(snapshot.getString("registeredByUserId"));
+    credit.setSalespersonDocument(snapshot.getString("salespersonDocument"));
+    credit.setSalespersonDocumentNormalized(resolveSearchKey(snapshot.getString("salespersonDocumentNormalized"), credit.getSalespersonDocument()));
     credit.setSalespersonName(snapshot.getString("salespersonName"));
     credit.setSalespersonNameNormalized(snapshot.getString("salespersonNameNormalized"));
     credit.setIsActive(snapshot.getBoolean("isActive"));

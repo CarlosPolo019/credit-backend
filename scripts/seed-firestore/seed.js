@@ -11,8 +11,11 @@ initializeApp({
 });
 
 const dataUrl = new URL("./data/credits.json", import.meta.url);
-const raw = await readFile(dataUrl, "utf8");
-const credits = JSON.parse(raw);
+const usersDataUrl = new URL("./data/users.json", import.meta.url);
+const rawCredits = await readFile(dataUrl, "utf8");
+const rawUsers = await readFile(usersDataUrl, "utf8");
+const credits = JSON.parse(rawCredits);
+const users = JSON.parse(rawUsers);
 const db = getFirestore();
 const now = Timestamp.now();
 
@@ -35,16 +38,43 @@ function fullName(item) {
 }
 
 const batch = db.batch();
+const usersByDocument = new Map();
+for (const user of users) {
+  const document = String(user.document);
+  const documentNormalized = normalize(document);
+  usersByDocument.set(document, { ...user, document, documentNormalized });
+  const ref = db.collection("users").doc(documentNormalized);
+  batch.set(ref, {
+    id: documentNormalized,
+    fullName: user.fullName,
+    document,
+    documentNormalized,
+    passwordHash: user.passwordHash,
+    role: user.role,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
 for (const item of credits) {
   const ref = db.collection("credits").doc(item.id);
   const clientName = fullName(item);
+  const salesperson = usersByDocument.get(String(item.salespersonDocument));
+  if (!salesperson) {
+    throw new Error(`Missing seeded salesperson ${item.salespersonDocument} for credit ${item.id}`);
+  }
   batch.set(ref, {
     ...item,
     clientName,
     clientNameNormalized: normalize(clientName),
     clientDocument: String(item.clientDocument),
     clientDocumentNormalized: normalize(item.clientDocument),
-    salespersonNameNormalized: normalize(item.salespersonName),
+    registeredByUserId: salesperson.documentNormalized,
+    salespersonDocument: salesperson.document,
+    salespersonDocumentNormalized: salesperson.documentNormalized,
+    salespersonName: salesperson.fullName,
+    salespersonNameNormalized: normalize(salesperson.fullName),
     amount: String(item.amount),
     interestRate: String(item.interestRate),
     isActive: true,
@@ -55,4 +85,4 @@ for (const item of credits) {
 }
 
 await batch.commit();
-console.log(`Seeded ${credits.length} credits.`);
+console.log(`Seeded ${users.length} users and ${credits.length} credits.`);

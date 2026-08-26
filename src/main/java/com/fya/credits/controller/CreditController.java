@@ -3,11 +3,13 @@ package com.fya.credits.controller;
 import com.fya.credits.dto.request.CreateCreditRequest;
 import com.fya.credits.dto.response.CreditListResponse;
 import com.fya.credits.dto.response.CreditResponse;
+import com.fya.credits.exception.BadRequestException;
 import com.fya.credits.service.CreditService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.net.URI;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +30,13 @@ public class CreditController {
 
   @Operation(summary = "Register a credit and queue its email notification")
   @PostMapping
-  public ResponseEntity<CreditResponse> create(@Valid @RequestBody CreateCreditRequest request) {
-    CreditResponse response = creditService.create(request);
+  public ResponseEntity<CreditResponse> create(
+      @Valid @RequestBody CreateCreditRequest request,
+      Authentication authentication) {
+    if (authentication == null) {
+      throw new BadRequestException("El usuario autenticado no está disponible");
+    }
+    CreditResponse response = creditService.create(request, authentication.getName());
     return ResponseEntity.created(URI.create("/api/v1/credits/" + response.id())).body(response);
   }
 

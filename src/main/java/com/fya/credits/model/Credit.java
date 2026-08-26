@@ -16,6 +16,9 @@ public class Credit {
   private BigDecimal amount;
   private BigDecimal interestRate;
   private Integer termMonths;
+  private String registeredByUserId;
+  private String salespersonDocument;
+  private String salespersonDocumentNormalized;
   private String salespersonName;
   private String salespersonNameNormalized;
   private Boolean isActive;
@@ -47,6 +50,12 @@ public class Credit {
   public void setInterestRate(BigDecimal interestRate) { this.interestRate = interestRate; }
   public Integer getTermMonths() { return termMonths; }
   public void setTermMonths(Integer termMonths) { this.termMonths = termMonths; }
+  public String getRegisteredByUserId() { return registeredByUserId; }
+  public void setRegisteredByUserId(String registeredByUserId) { this.registeredByUserId = registeredByUserId; }
+  public String getSalespersonDocument() { return salespersonDocument; }
+  public void setSalespersonDocument(String salespersonDocument) { this.salespersonDocument = salespersonDocument; }
+  public String getSalespersonDocumentNormalized() { return salespersonDocumentNormalized; }
+  public void setSalespersonDocumentNormalized(String salespersonDocumentNormalized) { this.salespersonDocumentNormalized = salespersonDocumentNormalized; }
   public String getSalespersonName() { return salespersonName; }
   public void setSalespersonName(String salespersonName) { this.salespersonName = salespersonName; }
   public String getSalespersonNameNormalized() { return salespersonNameNormalized; }

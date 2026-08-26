@@ -16,6 +16,5 @@ public record CreateCreditRequest(
     @NotBlank @Pattern(regexp = "\\d+", message = "La cédula o ID debe ser numérica") @Size(max = 20) String clientDocument,
     @NotNull @DecimalMin(value = "0.0", inclusive = false) BigDecimal amount,
     @NotNull @DecimalMin(value = "0.0") BigDecimal interestRate,
-    @NotNull @Positive Integer termMonths,
-    @NotBlank @Size(max = 120) String salespersonName) {
+    @NotNull @Positive Integer termMonths) {
 }

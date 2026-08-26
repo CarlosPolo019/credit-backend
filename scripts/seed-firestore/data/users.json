@@ -1,0 +1,20 @@
+[
+  {
+    "document": "900100001",
+    "fullName": "Carlos Escorcia",
+    "passwordHash": "$2a$10$Gk6IbkU/QmqkM3jGxec5AuoiKaKzEmu.00o92165gjXYTZyZFeU32",
+    "role": "USER"
+  },
+  {
+    "document": "900100002",
+    "fullName": "Jennifer Navarro",
+    "passwordHash": "$2a$10$Gk6IbkU/QmqkM3jGxec5AuoiKaKzEmu.00o92165gjXYTZyZFeU32",
+    "role": "USER"
+  },
+  {
+    "document": "900100003",
+    "fullName": "Adriana Castellano",
+    "passwordHash": "$2a$10$Gk6IbkU/QmqkM3jGxec5AuoiKaKzEmu.00o92165gjXYTZyZFeU32",
+    "role": "USER"
+  }
+]
