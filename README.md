@@ -157,7 +157,11 @@ Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).
 
 ## Email Worker
 
-`POST /credits` guarda un `EmailJob(PENDING)` y responde `201` sin esperar a Mailgun. Un worker programado (`EMAIL_WORKER_ENABLED=true`) toma los trabajos elegibles y los envía, con backoff cuadrático en los reintentos.
+El envío del correo es asíncrono: `POST /credits` nunca espera a Mailgun.
+
+1. `POST /credits` guarda el `Credit` y un `EmailJob(PENDING)` en la misma operación, y responde `201` de inmediato. El registro del crédito no depende de que el correo se pueda enviar.
+2. `EmailJobWorker` (`background/EmailJobWorker.java`) es un job programado (`@Scheduled(fixedDelay = EMAIL_WORKER_FIXED_DELAY_MS)`, activado con `EMAIL_WORKER_ENABLED=true`) que corre en un thread aparte del que atiende requests HTTP. Cada ciclo toma un lote de `EmailJob` elegibles y los envía por Mailgun.
+3. Si Mailgun falla, el job no se pierde: pasa a `RETRY` con backoff cuadrático (1, 4, 9... hasta 30 min) y se reintenta hasta `EMAIL_WORKER_MAX_ATTEMPTS`; si se agotan los intentos queda en `FAILED`. Todo el estado (`PENDING`/`PROCESSING`/`SENT`/`RETRY`/`FAILED`, intentos, último error) es consultable en `GET /email-jobs`, que es lo que alimenta la vista "Correos" del panel.
 
 El correo es HTML con la identidad visual de `credit-web` (verde `#00d280`, tinta `#052224`, logo) e incluye un botón que redirige a `APP_FRONTEND_BASE_URL/credits/{creditId}` para ver el detalle completo del crédito en el panel.
 

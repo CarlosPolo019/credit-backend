@@ -31,6 +31,7 @@ sequenceDiagram
 - `MAILGUN_FROM_EMAIL`
 - `MAILGUN_FROM_NAME`
 - `CREDIT_NOTIFICATION_EMAIL`
+- `APP_FRONTEND_BASE_URL`: base del panel para el botón "Ver detalle completo" del correo (el logo del correo usa una URL de producción fija, no esta variable).
 
 ## Reglas
 - El worker solo procesa `PENDING` y `RETRY` elegibles por `nextAttemptAt`.
