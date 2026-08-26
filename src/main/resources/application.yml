@@ -14,8 +14,11 @@ management:
 springdoc:
   api-docs:
     path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui/index.html
+  # No custom swagger-ui.path here: setting it to the same value as the
+  # real static resource (/swagger-ui/index.html) made springdoc redirect
+  # to itself, landing on /swagger-ui/swagger-ui/index.html. The default
+  # entrypoint (/swagger-ui.html -> forwards to /swagger-ui/index.html)
+  # already works correctly without any override.
 
 app:
   cors:
