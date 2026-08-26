@@ -10,7 +10,7 @@ Guia operativa para agentes que trabajen en `credit-backend`.
 - Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente.
 - Creditos: todas las consultas operativas filtran `isActive == true`; `DELETE` es borrado logico.
 - Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Mailgun; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`.
-- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`.
+- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`; `data/users.json` contiene perfiles comerciales para login.
 
 ## Protocolo De Inicio
 1. Ejecutar `pwd` y confirmar que estas en `credit-backend`.

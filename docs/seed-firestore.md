@@ -7,9 +7,17 @@
 ## Datos Del Anexo
 El anexo incluye nombre, monto, plazo e interes. Como no trae documento ni comercial:
 - `clientDocument`: `100000001` a `100000010`
-- `salespersonName`: `Comercial Seed`
+- `salespersonDocument`: se distribuye entre los usuarios seed.
 
 El seed guarda `clientFirstName`, `clientSecondName`, `clientFirstSurname` y `clientSecondSurname`, y deriva `clientName` para compatibilidad con la tabla y los correos.
+
+## Usuarios Seed
+El script tambien carga perfiles en `users`:
+- `900100001` / `demo12345` / Carlos Escorcia
+- `900100002` / `demo12345` / Jennifer Navarro
+- `900100003` / `demo12345` / Adriana Castellano
+
+La cedula es el identificador unico de login. El password se guarda como BCrypt.
 
 ## Ejecucion
 ```bash

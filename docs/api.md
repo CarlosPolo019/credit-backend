@@ -78,12 +78,12 @@ Request:
   "clientDocument": "100000001",
   "amount": 7800000,
   "interestRate": 2,
-  "termMonths": 10,
-  "salespersonName": "Comercial Seed"
+  "termMonths": 10
 }
 ```
 
 `clientDocument` solo acepta digitos. El backend guarda los nombres por partes y deriva `clientName` para busqueda, tabla y correo.
+El comercial se toma del subject del JWT, se consulta en `users` y se guarda como `salespersonName`, `salespersonDocument` y `registeredByUserId`.
 
 Response `201`: `CreditResponse`. Tambien crea un `EmailJob(PENDING)`.
 
@@ -109,6 +109,45 @@ Auth requerida. Si el credito esta inactivo retorna `404`.
 `DELETE /api/v1/credits/{id}`
 
 Auth requerida. Hace borrado logico: `isActive=false`, `deletedAt=now`, `updatedAt=now`.
+
+## Listar Trabajos De Correo
+`GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`
+
+Auth requerida. Lista toda la coleccion `email_jobs` (no solo los pendientes), pensado para monitoreo/soporte.
+
+Query params:
+- `status`: uno de `PENDING`, `PROCESSING`, `SENT`, `RETRY`, `FAILED`. Omitir para traer todos.
+- `search`: texto libre, busca coincidencia parcial en `clientName` o `recipient`.
+
+Campos de orden permitidos:
+- `createdAt` (default)
+- `status`
+
+Response `200`: `EmailJobListResponse`:
+```json
+{
+  "items": [
+    {
+      "id": "abc123",
+      "creditId": "CR-100000001",
+      "recipient": "fyasocialcapital@gmail.com",
+      "clientName": "Pepito Perez",
+      "creditAmount": 7800000,
+      "salespersonName": "Carlos Escorcia",
+      "registeredAt": "2026-08-25T20:00:00Z",
+      "status": "FAILED",
+      "attempts": 3,
+      "lastError": "Mailgun respondio 401",
+      "createdAt": "2026-08-25T20:00:00Z",
+      "processedAt": "2026-08-25T20:05:00Z",
+      "nextAttemptAt": null
+    }
+  ],
+  "total": 1
+}
+```
+
+`lastError` es un solo string que se sobreescribe en cada intento (no hay historial por intento).
 
 ## Errores
 - `400`: validacion o query no permitida.

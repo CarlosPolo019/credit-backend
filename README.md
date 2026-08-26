@@ -58,7 +58,12 @@ npm install
 npm run seed
 ```
 
-The seed uses the 10 annex records and fills missing document/salesperson values as numeric IDs `100000001..100000010` and `Comercial Seed`.
+The seed uses the 10 annex records, fills client documents as numeric IDs `100000001..100000010`, and creates commercial users for login.
+
+Seeded login profiles:
+- `900100001 / demo12345`
+- `900100002 / demo12345`
+- `900100003 / demo12345`
 
 ## Test And Build
 ```bash

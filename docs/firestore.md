@@ -32,6 +32,8 @@ Campos principales:
 - `amount`
 - `interestRate`
 - `termMonths`
+- `registeredByUserId`
+- `salespersonDocument`, `salespersonDocumentNormalized`
 - `salespersonName`, `salespersonNameNormalized`
 - `isActive`
 - `createdAt`, `updatedAt`, `deletedAt`
@@ -41,6 +43,7 @@ Reglas:
 - El borrado es logico.
 - `clientDocument` debe contener solo digitos.
 - `clientName` se deriva de las partes del nombre para compatibilidad de busqueda y salida.
+- El comercial se deriva del usuario autenticado por JWT y no se acepta como campo de entrada.
 - Los filtros de texto usan valores normalizados.
 - `amount` e `interestRate` se serializan como texto decimal para preservar precision.
 
