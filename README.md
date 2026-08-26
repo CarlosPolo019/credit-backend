@@ -10,6 +10,12 @@ No hace falta instalar nada para probar la API — ya está desplegada:
 - **Swagger UI**: **[https://fyatest-api.cmescorcia.com/swagger-ui/index.html](https://fyatest-api.cmescorcia.com/swagger-ui/index.html)** — probá los endpoints directo desde el navegador
 - **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health) — no es solo "¿está vivo el proceso?", incluye si Firestore realmente responde
 
+### Si la API está inactiva
+
+El backend corre en Render y puede entrar en reposo si pasa un rato sin recibir tráfico. En ese caso, el primer request después de la inactividad puede tardar mientras la instancia vuelve a arrancar. Si el panel web, Swagger o la app mobile muestran un error temporal de conexión, esperá un momento y reintentá.
+
+También podés abrir directamente `https://fyatest-api.cmescorcia.com`: mientras el servicio despierta, el navegador queda cargando. Cuando termine el arranque, usá el health check o Swagger para confirmar que la API ya responde.
+
 ![Swagger UI](docs/screenshots/swagger-ui.png)
 
 Para autenticarte en Swagger: `POST /api/v1/auth/login` con una de las cédulas sembradas (`900100001` / `demo12345`, ver tabla en [Seed](#seed)), copiá el `token` de la respuesta, y pegalo en el botón **Authorize** (arriba a la derecha) como `Bearer <token>`.
