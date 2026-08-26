@@ -15,7 +15,8 @@ docker build -t credit-backend:local .
 - Rechazo de password invalido.
 - Fallback del usuario demo.
 - Creacion de credito y `EmailJob(PENDING)`.
-- Edicion de credito (`update`), incluye rechazo cuando el credito no existe.
+- Edicion de credito (`update`): actualiza campos y registra entrada `UPDATED` en `credit_audit_logs`; no registra entrada si nada cambio; rechazo cuando el credito no existe.
+- Borrado de credito (`delete`): registra entrada `DELETED` en `credit_audit_logs`.
 - Worker marca `SENT`.
 - Worker programa retry cuando Mailgun falla.
 
@@ -26,7 +27,9 @@ docker build -t credit-backend:local .
 - Rate limit de login, crear y listar.
 - Listado activo con filtros y orden.
 - `GET` de credito inactivo retorna `404`.
-- `DELETE` realiza soft delete.
+- `DELETE` realiza soft delete y registra auditoria.
+- `PUT` no permite cambiar el comercial y registra auditoria solo con los campos que cambiaron.
+- `GET /api/v1/credits/{id}/audit` retorna el historial mas reciente primero.
 - Worker marca `FAILED` al llegar a max attempts.
 
 ## Bloqueos De Entorno

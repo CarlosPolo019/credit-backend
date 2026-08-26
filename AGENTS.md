@@ -9,7 +9,8 @@ Guia operativa para agentes que trabajen en `credit-backend`.
 - Persistencia: Firestore es la unica fuente de verdad para `credits`, `email_jobs` y `users`.
 - Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente.
 - Creditos: todas las consultas operativas filtran `isActive == true`; `DELETE` es borrado logico.
-- Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Mailgun; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`.
+- Edicion y auditoria: `PUT /api/v1/credits/{id}` edita datos del cliente y condiciones (nunca el comercial); cada `PUT`/`DELETE` registra una entrada en `credit_audit_logs`, consultable via `GET /api/v1/credits/{id}/audit`.
+- Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Mailgun; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`. El correo es HTML; el logo usa una URL de produccion fija y el boton de detalle usa `APP_FRONTEND_BASE_URL`.
 - Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`; `data/users.json` contiene perfiles comerciales para login.
 
 ## Protocolo De Inicio
@@ -72,5 +73,6 @@ Reglas:
 - OpenAPI sigue exponiendo auth y credit endpoints.
 - `POST /credits` crea `Credit` y `EmailJob(PENDING)` antes de devolver `201`.
 - `DELETE` conserva borrado logico y las consultas no devuelven inactivos.
+- `PUT` nunca cambia el comercial; `PUT`/`DELETE` siguen registrando su entrada en `credit_audit_logs`.
 - Worker conserva transiciones `PENDING/RETRY -> PROCESSING -> SENT|RETRY|FAILED`.
 - README, `.env.example`, `docs/**` y `document/agents/**` quedan sincronizados.
