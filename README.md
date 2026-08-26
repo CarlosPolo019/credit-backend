@@ -139,6 +139,7 @@ Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Aut
 | GET | `/api/v1/credits/{id}` | Bearer | Obtiene un crédito activo |
 | PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito |
 | DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
+| GET | `/api/v1/credits/{id}/audit` | Bearer | Historial de ediciones y borrado de un crédito |
 | GET | `/api/v1/email-jobs` | Bearer | Lista trabajos de correo (filtros de estado/búsqueda) |
 | GET | `/actuator/health` | Pública | Health check |
 | GET | `/swagger-ui/index.html` | Pública | Documentación interactiva |
@@ -151,6 +152,7 @@ Formatos completos de request/response y códigos de error: [`docs/api.md`](docs
 |---|---|
 | `users` | Cuentas registradas; identidad para login y registro de créditos |
 | `credits` | Créditos registrados (borrado lógico vía `isActive=false`) |
+| `credit_audit_logs` | Auditoría: quién editó/eliminó cada crédito y qué campos cambiaron |
 | `email_jobs` | Cola de notificaciones que procesa el worker programado |
 
 Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).

@@ -108,12 +108,38 @@ Auth requerida. Si el credito esta inactivo retorna `404`.
 ## Editar Credito
 `PUT /api/v1/credits/{id}`
 
-Auth requerida. Mismo body que crear (`clientFirstName`, `clientSecondName`, `clientFirstSurname`, `clientSecondSurname`, `clientDocument`, `amount`, `interestRate`, `termMonths`). No permite cambiar el comercial (`salespersonName`/`registeredByUserId` quedan igual, son del registro original). Recalcula `clientName`/normalizados y `updatedAt`. Response `200`: `CreditResponse`.
+Auth requerida. Mismo body que crear (`clientFirstName`, `clientSecondName`, `clientFirstSurname`, `clientSecondSurname`, `clientDocument`, `amount`, `interestRate`, `termMonths`). No permite cambiar el comercial (`salespersonName`/`registeredByUserId` quedan igual, son del registro original). Recalcula `clientName`/normalizados y `updatedAt`. Response `200`: `CreditResponse`. Registra una entrada `UPDATED` en el historial de auditoria con el detalle de los campos que cambiaron.
 
 ## Borrar Credito
 `DELETE /api/v1/credits/{id}`
 
-Auth requerida. Hace borrado logico: `isActive=false`, `deletedAt=now`, `updatedAt=now`.
+Auth requerida. Hace borrado logico: `isActive=false`, `deletedAt=now`, `updatedAt=now`. Registra una entrada `DELETED` en el historial de auditoria.
+
+## Historial De Un Credito
+`GET /api/v1/credits/{id}/audit`
+
+Auth requerida. Lista las ediciones y el borrado de un credito, mas reciente primero.
+
+Response `200`:
+```json
+[
+  {
+    "id": "abc123",
+    "creditId": "CR-100000001",
+    "action": "UPDATED",
+    "changedByUserId": "900100001",
+    "changedByDocument": "900100001",
+    "changedByName": "Carlos Escorcia",
+    "changedAt": "2026-08-26T20:00:00Z",
+    "changes": {
+      "amount": { "before": "7800000", "after": "9000000" },
+      "termMonths": { "before": "10", "after": "12" }
+    }
+  }
+]
+```
+
+`action` es `UPDATED` o `DELETED`. En `DELETED`, `changes` viene vacio (el registro completo ya quedo inactivo).
 
 ## Listar Trabajos De Correo
 `GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`

@@ -15,6 +15,7 @@ docker build -t credit-backend:local .
 - Rechazo de password invalido.
 - Fallback del usuario demo.
 - Creacion de credito y `EmailJob(PENDING)`.
+- Edicion de credito (`update`), incluye rechazo cuando el credito no existe.
 - Worker marca `SENT`.
 - Worker programa retry cuando Mailgun falla.
 

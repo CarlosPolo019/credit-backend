@@ -1,6 +1,7 @@
 package com.fya.credits.controller;
 
 import com.fya.credits.dto.request.CreateCreditRequest;
+import com.fya.credits.dto.response.CreditAuditEntryResponse;
 import com.fya.credits.dto.response.CreditListResponse;
 import com.fya.credits.dto.response.CreditResponse;
 import com.fya.credits.exception.BadRequestException;
@@ -8,6 +9,7 @@ import com.fya.credits.service.CreditService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,14 +62,29 @@ public class CreditController {
 
   @Operation(summary = "Update a credit's editable fields")
   @PutMapping("/{id}")
-  public CreditResponse update(@PathVariable String id, @Valid @RequestBody CreateCreditRequest request) {
-    return creditService.update(id, request);
+  public CreditResponse update(
+      @PathVariable String id,
+      @Valid @RequestBody CreateCreditRequest request,
+      Authentication authentication) {
+    if (authentication == null) {
+      throw new BadRequestException("El usuario autenticado no está disponible");
+    }
+    return creditService.update(id, request, authentication.getName());
   }
 
   @Operation(summary = "Soft-delete a credit")
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable String id) {
-    creditService.delete(id);
+  public ResponseEntity<Void> delete(@PathVariable String id, Authentication authentication) {
+    if (authentication == null) {
+      throw new BadRequestException("El usuario autenticado no está disponible");
+    }
+    creditService.delete(id, authentication.getName());
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "List audit entries for a credit's edits and deletion")
+  @GetMapping("/{id}/audit")
+  public List<CreditAuditEntryResponse> listAudit(@PathVariable String id) {
+    return creditService.listAudit(id);
   }
 }

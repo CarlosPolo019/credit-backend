@@ -2,6 +2,7 @@
 
 ## Colecciones
 - `credits/{creditId}`
+- `credit_audit_logs/{entryId}`
 - `email_jobs/{jobId}`
 - `users/{documentNormalized}`
 
@@ -43,9 +44,23 @@ Reglas:
 - El borrado es logico.
 - `clientDocument` debe contener solo digitos.
 - `clientName` se deriva de las partes del nombre para compatibilidad de busqueda y salida.
-- El comercial se deriva del usuario autenticado por JWT y no se acepta como campo de entrada.
+- El comercial se deriva del usuario autenticado por JWT y no se acepta como campo de entrada, ni en creacion ni en edicion (`PUT /api/v1/credits/{id}` solo puede cambiar datos del cliente y condiciones).
 - Los filtros de texto usan valores normalizados.
 - `amount` e `interestRate` se serializan como texto decimal para preservar precision.
+
+## `credit_audit_logs`
+Campos principales:
+- `id`
+- `creditId`
+- `action` (`UPDATED` o `DELETED`)
+- `changedByUserId`, `changedByDocument`, `changedByName`
+- `changedAt`
+- `changes`: mapa de campo -> `{before, after}` (vacio en `DELETED`)
+
+Reglas:
+- Se escribe una entrada por cada `PUT`/`DELETE` de `/api/v1/credits/{id}`; no hay entrada de creacion.
+- En `UPDATED` solo se listan los campos que realmente cambiaron.
+- Es de solo lectura desde la API (`GET /api/v1/credits/{id}/audit`); nada la modifica despues de creada.
 
 ## `email_jobs`
 Campos principales:
