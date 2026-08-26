@@ -3,17 +3,21 @@ package com.fya.credits.repository;
 import com.fya.credits.exception.DependencyUnavailableException;
 import com.fya.credits.model.EmailJob;
 import com.fya.credits.model.EmailJobStatus;
+import com.fya.credits.service.InputNormalizer;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 public class EmailJobRepository {
@@ -50,6 +54,41 @@ public class EmailJobRepository {
     } catch (Exception ex) {
       throw new DependencyUnavailableException("No se pudieron consultar los trabajos de correo");
     }
+  }
+
+  public List<EmailJob> listAll(EmailJobQuery query) {
+    try {
+      return firestore.collection(COLLECTION)
+          .get()
+          .get()
+          .getDocuments()
+          .stream()
+          .map(this::fromSnapshot)
+          .filter(job -> matches(job, query))
+          .sorted(comparator(query))
+          .toList();
+    } catch (Exception ex) {
+      throw new DependencyUnavailableException("No se pudieron consultar los trabajos de correo");
+    }
+  }
+
+  private boolean matches(EmailJob job, EmailJobQuery query) {
+    if (StringUtils.hasText(query.status()) && job.getStatus() != EmailJobStatus.valueOf(query.status())) {
+      return false;
+    }
+    if (!StringUtils.hasText(query.search())) {
+      return true;
+    }
+    String searchKey = InputNormalizer.searchKey(query.search());
+    return InputNormalizer.searchKey(Optional.ofNullable(job.getClientName()).orElse("")).contains(searchKey)
+        || InputNormalizer.searchKey(Optional.ofNullable(job.getRecipient()).orElse("")).contains(searchKey);
+  }
+
+  private Comparator<EmailJob> comparator(EmailJobQuery query) {
+    Comparator<EmailJob> comparator = "status".equals(query.sortBy())
+        ? Comparator.comparing(job -> job.getStatus().name())
+        : Comparator.comparing(EmailJob::getCreatedAt, Comparator.nullsLast(Instant::compareTo));
+    return "asc".equals(query.direction()) ? comparator : comparator.reversed();
   }
 
   public boolean claimProcessing(String jobId) {
