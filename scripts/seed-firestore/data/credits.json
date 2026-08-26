@@ -1,0 +1,92 @@
+[
+  {
+    "id": "seed-001",
+    "clientName": "Pepito Perez",
+    "clientDocument": "SEED-001",
+    "amount": 7800000,
+    "interestRate": 2,
+    "termMonths": 10,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-002",
+    "clientName": "Maria Perez",
+    "clientDocument": "SEED-002",
+    "amount": 12500000,
+    "interestRate": 2,
+    "termMonths": 5,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-003",
+    "clientName": "Antonio Rodriguez",
+    "clientDocument": "SEED-003",
+    "amount": 10312673,
+    "interestRate": 2,
+    "termMonths": 5,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-004",
+    "clientName": "Giselle López",
+    "clientDocument": "SEED-004",
+    "amount": 8628510,
+    "interestRate": 2,
+    "termMonths": 12,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-005",
+    "clientName": "Martha Perez",
+    "clientDocument": "SEED-005",
+    "amount": 5889085,
+    "interestRate": 2,
+    "termMonths": 24,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-006",
+    "clientName": "Isaac llanos",
+    "clientDocument": "SEED-006",
+    "amount": 14793565,
+    "interestRate": 2,
+    "termMonths": 48,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-007",
+    "clientName": "Teresa Gutierrez",
+    "clientDocument": "SEED-007",
+    "amount": 8072348,
+    "interestRate": 2,
+    "termMonths": 50,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-008",
+    "clientName": "Isabel Llanos",
+    "clientDocument": "SEED-008",
+    "amount": 5143860,
+    "interestRate": 2,
+    "termMonths": 60,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-009",
+    "clientName": "Paola Tao",
+    "clientDocument": "SEED-009",
+    "amount": 12881963,
+    "interestRate": 2,
+    "termMonths": 24,
+    "salespersonName": "Comercial Seed"
+  },
+  {
+    "id": "seed-010",
+    "clientName": "Wendy Moscoso",
+    "clientDocument": "SEED-010",
+    "amount": 13484682,
+    "interestRate": 2,
+    "termMonths": 40,
+    "salespersonName": "Comercial Seed"
+  }
+]

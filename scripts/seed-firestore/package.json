@@ -1,0 +1,12 @@
+{
+  "name": "credit-firestore-seed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
+  }
+}
