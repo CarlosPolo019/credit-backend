@@ -42,7 +42,7 @@ flowchart LR
   mobile["credit-mobile<br/>React Native"] -->|REST + JWT| api
   api --> firestore[("Cloud Firestore")]
   api -->|encola EmailJob| worker["Email Worker<br/>(programado)"]
-  worker --> mailgun["Mailgun"]
+  worker --> resend["Resend"]
 ```
 
 ### Login (con fallback demo)
@@ -71,14 +71,14 @@ sequenceDiagram
   participant API as credit-backend
   participant DB as Firestore
   participant Worker as Email Worker
-  participant Mailgun
+  participant Resend
   Client->>API: POST /api/v1/credits (Bearer JWT)
   API->>DB: resolver comercial en users (subject del JWT)
   API->>DB: guardar Credit + EmailJob(PENDING)
   API-->>Client: 201 CreditResponse
   Worker->>DB: buscar EmailJob elegible
-  Worker->>Mailgun: enviar notificación
-  Mailgun-->>Worker: ok / error
+  Worker->>Resend: enviar notificación
+  Resend-->>Worker: ok / error
   Worker->>DB: marcar SENT o RETRY/FAILED
 ```
 
@@ -91,7 +91,7 @@ sequenceDiagram
 | Datos | Firebase Admin SDK + Cloud Firestore |
 | Auth | JWT (JJWT) |
 | Rate limiting | Bucket4j |
-| Correo | Mailgun REST API |
+| Correo | Resend Email API |
 | Docs | springdoc OpenAPI |
 
 ## Instalación Local
@@ -102,7 +102,7 @@ Solo necesario si querés correr el backend en tu máquina en vez de usar la [de
 
 - Java 21 y Maven 3.9+ (no hay wrapper `mvnw`), **o** Docker — `docker build` resuelve Maven/Java 21 dentro de la imagen sin instalar nada local.
 - Un proyecto de Firebase con Firestore habilitado y un service account con permisos de lectura/escritura.
-- Cuenta de Mailgun (opcional; el sandbox alcanza para probar el worker de correo).
+- Cuenta de Resend (opcional para desarrollo; requerida si querés probar envío real).
 
 ### Paso A Paso
 
@@ -166,15 +166,15 @@ Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).
 
 ## Email Worker
 
-El envío del correo es asíncrono: `POST /credits` nunca espera a Mailgun.
+El envío del correo es asíncrono: `POST /credits` nunca espera a Resend.
 
 1. `POST /credits` guarda el `Credit` y un `EmailJob(PENDING)` en la misma operación, y responde `201` de inmediato. El registro del crédito no depende de que el correo se pueda enviar.
-2. `EmailJobWorker` (`background/EmailJobWorker.java`) es un job programado (`@Scheduled(fixedDelay = EMAIL_WORKER_FIXED_DELAY_MS)`, activado con `EMAIL_WORKER_ENABLED=true`) que corre en un thread aparte del que atiende requests HTTP. Cada ciclo toma un lote de `EmailJob` elegibles y los envía por Mailgun.
-3. Si Mailgun falla, el job no se pierde: pasa a `RETRY` con backoff cuadrático (1, 4, 9... hasta 30 min) y se reintenta hasta `EMAIL_WORKER_MAX_ATTEMPTS`; si se agotan los intentos queda en `FAILED`. Todo el estado (`PENDING`/`PROCESSING`/`SENT`/`RETRY`/`FAILED`, intentos, último error) es consultable en `GET /email-jobs`, que es lo que alimenta la vista "Correos" del panel.
+2. `EmailJobWorker` (`background/EmailJobWorker.java`) es un job programado (`@Scheduled(fixedDelay = EMAIL_WORKER_FIXED_DELAY_MS)`, activado con `EMAIL_WORKER_ENABLED=true`) que corre en un thread aparte del que atiende requests HTTP. Cada ciclo toma un lote de `EmailJob` elegibles y los envía por Resend.
+3. Si Resend falla, el job no se pierde: pasa a `RETRY` con backoff cuadrático (1, 4, 9... hasta 30 min) y se reintenta hasta `EMAIL_WORKER_MAX_ATTEMPTS`; si se agotan los intentos queda en `FAILED`. Todo el estado (`PENDING`/`PROCESSING`/`SENT`/`RETRY`/`FAILED`, intentos, último error) es consultable en `GET /email-jobs`, que es lo que alimenta la vista "Correos" del panel.
 
 El correo es HTML con la identidad visual de `credit-web` (verde `#00d280`, tinta `#052224`, logo) e incluye un botón que redirige a `APP_FRONTEND_BASE_URL/credits/{creditId}` para ver el detalle completo del crédito en el panel.
 
-Variables de Mailgun requeridas: `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_BASE_URL`, `MAILGUN_FROM_EMAIL`, `MAILGUN_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`, `APP_FRONTEND_BASE_URL`. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
+Variables de Resend requeridas: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`, `APP_FRONTEND_BASE_URL`. En producción, `RESEND_FROM_EMAIL` debe usar un dominio verificado en Resend para evitar rechazos 403. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
 
 ## Seed
 
@@ -224,7 +224,7 @@ Para desplegar: GitHub → **Actions** → **Deploy Backend** → **Run workflow
 | [`AGENTS.md`](AGENTS.md) | Reglas de trabajo para agentes en este repo |
 | [`docs/api.md`](docs/api.md) | Contrato HTTP y códigos de error |
 | [`docs/firestore.md`](docs/firestore.md) | Colecciones, campos, invariantes |
-| [`docs/email-worker.md`](docs/email-worker.md) | Flujo de Mailgun y reintentos |
+| [`docs/email-worker.md`](docs/email-worker.md) | Flujo de Resend y reintentos |
 | [`docs/seed-firestore.md`](docs/seed-firestore.md) | Script de seed del anexo |
 | [`docs/testing.md`](docs/testing.md) | Pruebas esperadas y limitaciones del entorno |
 | [`docs/deployment.md`](docs/deployment.md) | Docker, Render, dominio, variables |

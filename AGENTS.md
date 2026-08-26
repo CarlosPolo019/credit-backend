@@ -3,14 +3,14 @@
 Guia operativa para agentes que trabajen en `credit-backend`.
 
 ## Mapa Rapido
-- Stack: Java 21, Spring Boot 3.5.16, Maven, Firestore, Firebase Admin SDK, JWT, Bucket4j, Mailgun REST.
+- Stack: Java 21, Spring Boot 3.5.16, Maven, Firestore, Firebase Admin SDK, JWT, Bucket4j, Resend Email API.
 - Paquete base: `com.fya.credits`.
 - Capas activas: `config`, `security`, `controller`, `dto`, `model`, `repository`, `service`, `service/email`, `background`, `exception`.
 - Persistencia: Firestore es la unica fuente de verdad para `credits`, `email_jobs` y `users`.
 - Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente.
 - Creditos: todas las consultas operativas filtran `isActive == true`; `DELETE` es borrado logico.
 - Edicion y auditoria: `PUT /api/v1/credits/{id}` edita datos del cliente y condiciones (nunca el comercial); cada `PUT`/`DELETE` registra una entrada en `credit_audit_logs`, consultable via `GET /api/v1/credits/{id}/audit`.
-- Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Mailgun; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`. El correo es HTML; el logo usa una URL de produccion fija y el boton de detalle usa `APP_FRONTEND_BASE_URL`.
+- Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Resend; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`. El correo es HTML; el logo usa una URL de produccion fija y el boton de detalle usa `APP_FRONTEND_BASE_URL`.
 - Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`; `data/users.json` contiene perfiles comerciales para login.
 
 ## Protocolo De Inicio
@@ -42,11 +42,11 @@ Reglas:
 
 ## Convenciones
 - Mantener el codigo en los paquetes actuales; no crear un segundo scaffold ni otra clase `@SpringBootApplication`.
-- Nunca exponer errores crudos de Firebase, Mailgun, JWT o BCrypt al cliente.
+- Nunca exponer errores crudos de Firebase, Resend, JWT o BCrypt al cliente.
 - No acceder a Firestore desde controladores; usar servicios y repositorios.
 - `amount` e `interestRate` se tratan como `BigDecimal`.
 - La fecha oficial la genera backend con `Clock`.
-- No versionar `.env`, credenciales Firebase/Mailgun, private keys, tokens ni passwords reales.
+- No versionar `.env`, credenciales Firebase/Resend, private keys, tokens ni passwords reales.
 
 ## Documentacion Obligatoria
 - Cambios de endpoints: actualizar `docs/api.md`.

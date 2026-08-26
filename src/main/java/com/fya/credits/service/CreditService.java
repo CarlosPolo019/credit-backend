@@ -41,7 +41,7 @@ public class CreditService {
       UserRepository userRepository,
       CreditAuditRepository creditAuditRepository,
       Clock clock,
-      @Value("${app.mailgun.notification-email}") String notificationEmail) {
+      @Value("${app.email.notification-email}") String notificationEmail) {
     this.creditRepository = creditRepository;
     this.emailJobRepository = emailJobRepository;
     this.userRepository = userRepository;

@@ -16,9 +16,13 @@ Variables criticas:
 - `DEMO_USER_USERNAME`
 - `DEMO_USER_PASSWORD_HASH`
 - `FIREBASE_*`
-- `MAILGUN_*`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `RESEND_FROM_NAME`
 - `CREDIT_NOTIFICATION_EMAIL`
 - `APP_CORS_ALLOWED_ORIGINS` — debe incluir el dominio de produccion del frontend (ver "CORS En Produccion" abajo), si no el login/API fallan por CORS aunque el resto este bien configurado.
+
+Para correo real con Resend, `RESEND_FROM_EMAIL` debe usar un dominio verificado en Resend. El destinatario final se configura con `CREDIT_NOTIFICATION_EMAIL`.
 
 ## CORS En Produccion
 `credit-web` se sirve en `https://fyatest.cmescorcia.com` (dominio personalizado sobre Vercel, ver `credit-web/document/deployment.md`). En Render, `APP_CORS_ALLOWED_ORIGINS` debe incluir ese origen ademas de los de desarrollo local:
@@ -49,6 +53,5 @@ Produccion vive en `https://fyatest-api.cmescorcia.com` (en vez de la URL larga 
 
 ## Notas
 - `EMAIL_WORKER_ENABLED=false` permite levantar API sin enviar correo.
-- Para produccion, usar `EMAIL_WORKER_ENABLED=true` solo cuando Mailgun y Firestore esten configurados.
+- Para produccion, usar `EMAIL_WORKER_ENABLED=true` solo cuando Resend y Firestore esten configurados.
 - El free tier puede dormir; los `email_jobs` pendientes quedan persistidos.
-

@@ -24,13 +24,13 @@ class EmailJobServiceTest {
   @Test
   void listsJobsFilteredByStatus() {
     EmailJobService service = new EmailJobService(emailJobRepository);
-    when(emailJobRepository.listAll(any())).thenReturn(List.of(job(EmailJobStatus.FAILED, "Mailgun respondio 401")));
+    when(emailJobRepository.listAll(any())).thenReturn(List.of(job(EmailJobStatus.FAILED, "Resend respondio 401")));
 
     var response = service.list("FAILED", null, null, null);
 
     assertThat(response.total()).isEqualTo(1);
     assertThat(response.items().get(0).status()).isEqualTo("FAILED");
-    assertThat(response.items().get(0).lastError()).isEqualTo("Mailgun respondio 401");
+    assertThat(response.items().get(0).lastError()).isEqualTo("Resend respondio 401");
   }
 
   @Test

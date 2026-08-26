@@ -6,17 +6,18 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.HtmlUtils;
 
 @Service
-public class MailgunEmailService implements EmailService {
+public class ResendEmailService implements EmailService {
   private static final Locale ES_CO = Locale.forLanguageTag("es-CO");
   private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
   private static final DateTimeFormatter DATE_FORMAT =
@@ -28,23 +29,20 @@ public class MailgunEmailService implements EmailService {
 
   private final RestClient.Builder restClientBuilder;
   private final String apiKey;
-  private final String domain;
   private final String baseUrl;
   private final String fromEmail;
   private final String fromName;
   private final String frontendBaseUrl;
 
-  public MailgunEmailService(
+  public ResendEmailService(
       RestClient.Builder restClientBuilder,
-      @Value("${app.mailgun.api-key}") String apiKey,
-      @Value("${app.mailgun.domain}") String domain,
-      @Value("${app.mailgun.base-url}") String baseUrl,
-      @Value("${app.mailgun.from-email}") String fromEmail,
-      @Value("${app.mailgun.from-name}") String fromName,
+      @Value("${app.resend.api-key}") String apiKey,
+      @Value("${app.resend.base-url}") String baseUrl,
+      @Value("${app.resend.from-email}") String fromEmail,
+      @Value("${app.resend.from-name}") String fromName,
       @Value("${app.frontend.base-url}") String frontendBaseUrl) {
     this.restClientBuilder = restClientBuilder;
     this.apiKey = apiKey;
-    this.domain = domain;
     this.baseUrl = baseUrl;
     this.fromEmail = fromEmail;
     this.fromName = fromName;
@@ -58,29 +56,29 @@ public class MailgunEmailService implements EmailService {
     String amount = formatAmount(job.getCreditAmount());
     String registeredAt = formatDate(job);
 
-    LinkedMultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-    body.add("from", "%s <%s>".formatted(fromName, fromEmail));
-    body.add("to", job.getRecipient());
-    body.add("subject", "Nuevo crédito registrado · %s".formatted(job.getClientName()));
-    body.add("text", """
-        Se registró un nuevo crédito.
+    ResendEmailRequest body = new ResendEmailRequest(
+        formatSender(),
+        List.of(job.getRecipient()),
+        "Nuevo crédito registrado · %s".formatted(job.getClientName()),
+        buildHtml(job, amount, registeredAt, detailUrl),
+        """
+            Se registró un nuevo crédito.
 
-        Cliente: %s
-        Valor: %s
-        Comercial: %s
-        Fecha de registro: %s
+            Cliente: %s
+            Valor: %s
+            Comercial: %s
+            Fecha de registro: %s
 
-        Ver el detalle completo: %s
-        """.formatted(job.getClientName(), amount, job.getSalespersonName(), registeredAt, detailUrl));
-    body.add("html", buildHtml(job, amount, registeredAt, detailUrl));
+            Ver el detalle completo: %s
+            """.formatted(job.getClientName(), amount, job.getSalespersonName(), registeredAt, detailUrl));
 
     restClientBuilder
-        .baseUrl(baseUrl)
-        .defaultHeaders(headers -> headers.setBasicAuth("api", apiKey))
+        .baseUrl(baseUrl.replaceAll("/+$", ""))
+        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
         .build()
         .post()
-        .uri("/{domain}/messages", domain)
-        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+        .uri("/emails")
+        .contentType(MediaType.APPLICATION_JSON)
         .body(body)
         .retrieve()
         .toBodilessEntity();
@@ -186,10 +184,22 @@ public class MailgunEmailService implements EmailService {
   }
 
   private void ensureConfigured() {
-    if (!StringUtils.hasText(apiKey)
-        || !StringUtils.hasText(domain)
-        || !StringUtils.hasText(fromEmail)) {
-      throw new DependencyUnavailableException("Mailgun no está configurado");
+    if (!StringUtils.hasText(apiKey) || !StringUtils.hasText(fromEmail)) {
+      throw new DependencyUnavailableException("Resend no está configurado");
     }
   }
+
+  private String formatSender() {
+    if (!StringUtils.hasText(fromName)) {
+      return fromEmail;
+    }
+    return "%s <%s>".formatted(fromName, fromEmail);
+  }
+
+  private record ResendEmailRequest(
+      String from,
+      List<String> to,
+      String subject,
+      String html,
+      String text) {}
 }

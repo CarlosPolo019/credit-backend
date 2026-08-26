@@ -39,18 +39,17 @@ app:
     client-email: ${FIREBASE_CLIENT_EMAIL:}
     private-key: ${FIREBASE_PRIVATE_KEY:}
     service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
-  mailgun:
-    api-key: ${MAILGUN_API_KEY:}
-    domain: ${MAILGUN_DOMAIN:}
-    base-url: ${MAILGUN_BASE_URL:https://api.mailgun.net/v3}
-    from-email: ${MAILGUN_FROM_EMAIL:}
-    from-name: ${MAILGUN_FROM_NAME:Fya Social Capital}
-    notification-email: ${CREDIT_NOTIFICATION_EMAIL:fyasocialcapital@gmail.com}
+  resend:
+    api-key: ${RESEND_API_KEY:}
+    base-url: ${RESEND_BASE_URL:https://api.resend.com}
+    from-email: ${RESEND_FROM_EMAIL:}
+    from-name: ${RESEND_FROM_NAME:Fya Social Capital}
   rate-limit:
     login-per-minute: ${RATE_LIMIT_LOGIN_PER_MINUTE:5}
     create-credit-per-minute: ${RATE_LIMIT_CREATE_CREDIT_PER_MINUTE:20}
     list-credit-per-minute: ${RATE_LIMIT_LIST_CREDITS_PER_MINUTE:60}
   email:
+    notification-email: ${CREDIT_NOTIFICATION_EMAIL:fyasocialcapital@gmail.com}
     worker:
       enabled: ${EMAIL_WORKER_ENABLED:false}
       fixed-delay-ms: ${EMAIL_WORKER_FIXED_DELAY_MS:10000}

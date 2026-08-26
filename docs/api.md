@@ -175,7 +175,7 @@ Response `200`: `EmailJobListResponse`:
       "registeredAt": "2026-08-25T20:00:00Z",
       "status": "FAILED",
       "attempts": 3,
-      "lastError": "Mailgun respondio 401",
+      "lastError": "Resend respondio 401",
       "createdAt": "2026-08-25T20:00:00Z",
       "processedAt": "2026-08-25T20:05:00Z",
       "nextAttemptAt": null
@@ -193,4 +193,4 @@ Response `200`: `EmailJobListResponse`:
 - `409`: cedula ya registrada.
 - `404`: credito inexistente o inactivo.
 - `429`: rate limit.
-- `503`: Firestore/Mailgun no disponible.
+- `503`: Firestore/proveedor de correo no disponible.

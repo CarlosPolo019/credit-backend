@@ -44,13 +44,13 @@ class EmailJobWorkerTest {
     Clock clock = Clock.fixed(Instant.parse("2026-08-25T20:00:00Z"), ZoneOffset.UTC);
     EmailJobWorker worker = new EmailJobWorker(emailJobRepository, emailService, clock, true, 10, 3);
     when(emailJobRepository.claimProcessing("job-2")).thenReturn(true);
-    doThrow(new RuntimeException("mailgun timeout")).when(emailService).sendCreditRegistered(job);
+    doThrow(new RuntimeException("email provider timeout")).when(emailService).sendCreditRegistered(job);
 
     worker.process(job);
 
     verify(emailJobRepository).markRetryOrFailed(
         job,
-        "mailgun timeout",
+        "email provider timeout",
         clock.instant(),
         clock.instant().plus(Duration.ofMinutes(1)),
         3);

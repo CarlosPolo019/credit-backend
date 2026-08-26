@@ -18,7 +18,7 @@ docker build -t credit-backend:local .
 - Edicion de credito (`update`): actualiza campos y registra entrada `UPDATED` en `credit_audit_logs`; no registra entrada si nada cambio; rechazo cuando el credito no existe.
 - Borrado de credito (`delete`): registra entrada `DELETED` en `credit_audit_logs`.
 - Worker marca `SENT`.
-- Worker programa retry cuando Mailgun falla.
+- Worker programa retry cuando el proveedor de correo falla.
 
 ## Casos Que Deben Mantenerse
 - Login valido e invalido por cedula.
