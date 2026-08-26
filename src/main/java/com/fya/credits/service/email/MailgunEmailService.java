@@ -21,6 +21,10 @@ public class MailgunEmailService implements EmailService {
   private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
   private static final DateTimeFormatter DATE_FORMAT =
       DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, h:mm a", ES_CO);
+  // Fixed instead of derived from app.frontend.base-url: email clients need a
+  // stable, always-reachable image URL, and this asset is only ever hosted
+  // at the production domain regardless of which environment sent the email.
+  private static final String LOGO_URL = "https://fyatest.cmescorcia.com/fya-mark.png";
 
   private final RestClient.Builder restClientBuilder;
   private final String apiKey;
@@ -83,7 +87,6 @@ public class MailgunEmailService implements EmailService {
   }
 
   private String buildHtml(EmailJob job, String amount, String registeredAt, String detailUrl) {
-    String logoUrl = frontendBaseUrl.replaceAll("/+$", "") + "/fya-mark.png";
     return """
         <!doctype html>
         <html lang="es">
@@ -160,7 +163,7 @@ public class MailgunEmailService implements EmailService {
           </body>
         </html>
         """.formatted(
-        logoUrl,
+        LOGO_URL,
         HtmlUtils.htmlEscape(job.getClientName()),
         HtmlUtils.htmlEscape(job.getClientName()),
         amount,
