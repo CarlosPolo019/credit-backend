@@ -8,7 +8,7 @@ No hace falta instalar nada para probar la API — ya está desplegada:
 
 - **API**: `https://fyatest-api.cmescorcia.com`
 - **Swagger UI**: **[https://fyatest-api.cmescorcia.com/swagger-ui/index.html](https://fyatest-api.cmescorcia.com/swagger-ui/index.html)** — probá los endpoints directo desde el navegador
-- **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health)
+- **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health) — no es solo "¿está vivo el proceso?", incluye si Firestore realmente responde
 
 ![Swagger UI](docs/screenshots/swagger-ui.png)
 

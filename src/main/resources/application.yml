@@ -6,6 +6,9 @@ spring:
     name: credit-backend
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
