@@ -37,10 +37,21 @@ public class CreditService {
 
   public CreditResponse create(CreateCreditRequest request) {
     Instant now = clock.instant();
+    String clientFirstName = InputNormalizer.cleanText(request.clientFirstName());
+    String clientSecondName = InputNormalizer.cleanText(request.clientSecondName());
+    String clientFirstSurname = InputNormalizer.cleanText(request.clientFirstSurname());
+    String clientSecondSurname = InputNormalizer.cleanText(request.clientSecondSurname());
+    String clientDocument = numericDocument(request.clientDocument());
+    String clientName = joinName(clientFirstName, clientSecondName, clientFirstSurname, clientSecondSurname);
+
     Credit credit = new Credit();
-    credit.setClientName(InputNormalizer.cleanText(request.clientName()));
+    credit.setClientFirstName(clientFirstName);
+    credit.setClientSecondName(clientSecondName);
+    credit.setClientFirstSurname(clientFirstSurname);
+    credit.setClientSecondSurname(clientSecondSurname);
+    credit.setClientName(clientName);
     credit.setClientNameNormalized(InputNormalizer.searchKey(credit.getClientName()));
-    credit.setClientDocument(InputNormalizer.cleanText(request.clientDocument()));
+    credit.setClientDocument(clientDocument);
     credit.setClientDocumentNormalized(InputNormalizer.searchKey(credit.getClientDocument()));
     credit.setAmount(request.amount());
     credit.setInterestRate(request.interestRate());
@@ -120,5 +131,19 @@ public class CreditService {
       throw new BadRequestException("direction no permitida");
     }
     return direction;
+  }
+
+  private String numericDocument(String value) {
+    String document = InputNormalizer.cleanText(value);
+    if (!document.matches("\\d+")) {
+      throw new BadRequestException("La cédula o ID debe ser numérica");
+    }
+    return document;
+  }
+
+  private String joinName(String firstName, String secondName, String firstSurname, String secondSurname) {
+    return String.join(" ", List.of(firstName, secondName, firstSurname, secondSurname).stream()
+        .filter(part -> part != null && !part.isBlank())
+        .toList());
   }
 }

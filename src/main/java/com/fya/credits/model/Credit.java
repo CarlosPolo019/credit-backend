@@ -5,6 +5,10 @@ import java.time.Instant;
 
 public class Credit {
   private String id;
+  private String clientFirstName;
+  private String clientSecondName;
+  private String clientFirstSurname;
+  private String clientSecondSurname;
   private String clientName;
   private String clientNameNormalized;
   private String clientDocument;
@@ -21,6 +25,14 @@ public class Credit {
 
   public String getId() { return id; }
   public void setId(String id) { this.id = id; }
+  public String getClientFirstName() { return clientFirstName; }
+  public void setClientFirstName(String clientFirstName) { this.clientFirstName = clientFirstName; }
+  public String getClientSecondName() { return clientSecondName; }
+  public void setClientSecondName(String clientSecondName) { this.clientSecondName = clientSecondName; }
+  public String getClientFirstSurname() { return clientFirstSurname; }
+  public void setClientFirstSurname(String clientFirstSurname) { this.clientFirstSurname = clientFirstSurname; }
+  public String getClientSecondSurname() { return clientSecondSurname; }
+  public void setClientSecondSurname(String clientSecondSurname) { this.clientSecondSurname = clientSecondSurname; }
   public String getClientName() { return clientName; }
   public void setClientName(String clientName) { this.clientName = clientName; }
   public String getClientNameNormalized() { return clientNameNormalized; }

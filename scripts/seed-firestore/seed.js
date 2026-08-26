@@ -25,12 +25,24 @@ function normalize(value) {
     .toLowerCase();
 }
 
+function fullName(item) {
+  return [
+    item.clientFirstName,
+    item.clientSecondName,
+    item.clientFirstSurname,
+    item.clientSecondSurname,
+  ].filter(Boolean).join(" ");
+}
+
 const batch = db.batch();
 for (const item of credits) {
   const ref = db.collection("credits").doc(item.id);
+  const clientName = fullName(item);
   batch.set(ref, {
     ...item,
-    clientNameNormalized: normalize(item.clientName),
+    clientName,
+    clientNameNormalized: normalize(clientName),
+    clientDocument: String(item.clientDocument),
     clientDocumentNormalized: normalize(item.clientDocument),
     salespersonNameNormalized: normalize(item.salespersonName),
     amount: String(item.amount),

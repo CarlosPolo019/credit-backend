@@ -6,6 +6,10 @@ import java.time.Instant;
 
 public record CreditResponse(
     String id,
+    String clientFirstName,
+    String clientSecondName,
+    String clientFirstSurname,
+    String clientSecondSurname,
     String clientName,
     String clientDocument,
     BigDecimal amount,
@@ -19,6 +23,10 @@ public record CreditResponse(
   public static CreditResponse from(Credit credit) {
     return new CreditResponse(
         credit.getId(),
+        credit.getClientFirstName(),
+        credit.getClientSecondName(),
+        credit.getClientFirstSurname(),
+        credit.getClientSecondSurname(),
         credit.getClientName(),
         credit.getClientDocument(),
         credit.getAmount(),

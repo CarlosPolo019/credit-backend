@@ -1,5 +1,7 @@
-target/
 .env
+target/
 node_modules/
+scripts/seed-firestore/node_modules/
 scripts/seed-firestore/package-lock.json
 *.log
+.git/

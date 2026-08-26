@@ -6,8 +6,10 @@
 
 ## Datos Del Anexo
 El anexo incluye nombre, monto, plazo e interes. Como no trae documento ni comercial:
-- `clientDocument`: `SEED-001` a `SEED-010`
+- `clientDocument`: `100000001` a `100000010`
 - `salespersonName`: `Comercial Seed`
+
+El seed guarda `clientFirstName`, `clientSecondName`, `clientFirstSurname` y `clientSecondSurname`, y deriva `clientName` para compatibilidad con la tabla y los correos.
 
 ## Ejecucion
 ```bash
@@ -23,4 +25,3 @@ Usar una de estas opciones:
 - `FIREBASE_SERVICE_ACCOUNT_JSON`.
 
 No versionar credenciales reales.
-

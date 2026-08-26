@@ -6,11 +6,11 @@ Guia operativa para agentes que trabajen en `credit-backend`.
 - Stack: Java 21, Spring Boot 3.5.16, Maven, Firestore, Firebase Admin SDK, JWT, Bucket4j, Mailgun REST.
 - Paquete base: `com.fya.credits`.
 - Capas activas: `config`, `security`, `controller`, `dto`, `model`, `repository`, `service`, `service/email`, `background`, `exception`.
-- Persistencia: Firestore es la unica fuente de verdad para `credits` y `email_jobs`.
-- Auth: `POST /api/v1/auth/login` emite JWT para el usuario demo configurable por ambiente.
+- Persistencia: Firestore es la unica fuente de verdad para `credits`, `email_jobs` y `users`.
+- Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente.
 - Creditos: todas las consultas operativas filtran `isActive == true`; `DELETE` es borrado logico.
 - Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Mailgun; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`.
-- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos `SEED-001..SEED-010`.
+- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`.
 
 ## Protocolo De Inicio
 1. Ejecutar `pwd` y confirmar que estas en `credit-backend`.

@@ -39,8 +39,11 @@ class CreditServiceTest {
     });
 
     service.create(new CreateCreditRequest(
-        "  Pepito   Perez  ",
-        " SEED-001 ",
+        "  Pepito  ",
+        "",
+        " Perez ",
+        "",
+        " 100000001 ",
         BigDecimal.valueOf(7800000),
         BigDecimal.valueOf(2),
         10,
@@ -51,10 +54,32 @@ class CreditServiceTest {
     verify(creditRepository).save(creditCaptor.capture());
     verify(emailJobRepository).save(jobCaptor.capture());
 
+    assertThat(creditCaptor.getValue().getClientFirstName()).isEqualTo("Pepito");
+    assertThat(creditCaptor.getValue().getClientFirstSurname()).isEqualTo("Perez");
     assertThat(creditCaptor.getValue().getClientName()).isEqualTo("Pepito Perez");
+    assertThat(creditCaptor.getValue().getClientDocument()).isEqualTo("100000001");
     assertThat(creditCaptor.getValue().getIsActive()).isTrue();
     assertThat(jobCaptor.getValue().getCreditId()).isEqualTo("credit-1");
     assertThat(jobCaptor.getValue().getRecipient()).isEqualTo("fyasocialcapital@gmail.com");
+  }
+
+  @Test
+  void rejectsNonNumericClientDocument() {
+    CreditService service = new CreditService(
+        creditRepository, emailJobRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+
+    assertThatThrownBy(() -> service.create(new CreateCreditRequest(
+        "Pepito",
+        "",
+        "Perez",
+        "",
+        "ABC-123",
+        BigDecimal.valueOf(7800000),
+        BigDecimal.valueOf(2),
+        10,
+        "Comercial Seed")))
+        .isInstanceOf(BadRequestException.class)
+        .hasMessage("La cédula o ID debe ser numérica");
   }
 
   @Test

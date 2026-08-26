@@ -9,12 +9,17 @@ docker build -t credit-backend:local .
 
 ## Casos Cubiertos
 - Normalizacion de input.
+- Registro de usuario por cedula y password.
+- Rechazo de cedula duplicada.
+- Login de usuario registrado por cedula.
+- Rechazo de password invalido.
+- Fallback del usuario demo.
 - Creacion de credito y `EmailJob(PENDING)`.
 - Worker marca `SENT`.
 - Worker programa retry cuando Mailgun falla.
 
 ## Casos Que Deben Mantenerse
-- Login valido e invalido.
+- Login valido e invalido por cedula.
 - JWT requerido en `/api/v1/credits`.
 - Validaciones de request.
 - Rate limit de login, crear y listar.
@@ -25,4 +30,3 @@ docker build -t credit-backend:local .
 
 ## Bloqueos De Entorno
 El proyecto requiere Maven y Java 21. Si el entorno local no los tiene, usar Docker o CI.
-

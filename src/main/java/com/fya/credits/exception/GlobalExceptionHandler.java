@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
         .body(ApiError.of(401, "UNAUTHORIZED", "Credenciales inválidas"));
   }
 
+  @ExceptionHandler(ConflictException.class)
+  ResponseEntity<ApiError> conflict(ConflictException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ApiError.of(409, "CONFLICT", ex.getMessage()));
+  }
+
   @ExceptionHandler(NotFoundException.class)
   ResponseEntity<ApiError> notFound(NotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)

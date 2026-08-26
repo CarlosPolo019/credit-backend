@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -109,6 +110,10 @@ public class CreditRepository {
   private Map<String, Object> toFirestore(Credit credit) {
     Map<String, Object> values = new HashMap<>();
     values.put("id", credit.getId());
+    values.put("clientFirstName", credit.getClientFirstName());
+    values.put("clientSecondName", credit.getClientSecondName());
+    values.put("clientFirstSurname", credit.getClientFirstSurname());
+    values.put("clientSecondSurname", credit.getClientSecondSurname());
     values.put("clientName", credit.getClientName());
     values.put("clientNameNormalized", credit.getClientNameNormalized());
     values.put("clientDocument", credit.getClientDocument());
@@ -128,10 +133,14 @@ public class CreditRepository {
   private Credit fromSnapshot(DocumentSnapshot snapshot) {
     Credit credit = new Credit();
     credit.setId(snapshot.getString("id") != null ? snapshot.getString("id") : snapshot.getId());
-    credit.setClientName(snapshot.getString("clientName"));
-    credit.setClientNameNormalized(snapshot.getString("clientNameNormalized"));
+    credit.setClientFirstName(snapshot.getString("clientFirstName"));
+    credit.setClientSecondName(snapshot.getString("clientSecondName"));
+    credit.setClientFirstSurname(snapshot.getString("clientFirstSurname"));
+    credit.setClientSecondSurname(snapshot.getString("clientSecondSurname"));
+    credit.setClientName(resolveClientName(snapshot, credit));
+    credit.setClientNameNormalized(resolveSearchKey(snapshot.getString("clientNameNormalized"), credit.getClientName()));
     credit.setClientDocument(snapshot.getString("clientDocument"));
-    credit.setClientDocumentNormalized(snapshot.getString("clientDocumentNormalized"));
+    credit.setClientDocumentNormalized(resolveSearchKey(snapshot.getString("clientDocumentNormalized"), credit.getClientDocument()));
     credit.setAmount(bigDecimal(snapshot.get("amount")));
     credit.setInterestRate(bigDecimal(snapshot.get("interestRate")));
     Long term = snapshot.getLong("termMonths");
@@ -143,6 +152,24 @@ public class CreditRepository {
     credit.setUpdatedAt(instant(snapshot.get("updatedAt")));
     credit.setDeletedAt(instant(snapshot.get("deletedAt")));
     return credit;
+  }
+
+  private String resolveClientName(DocumentSnapshot snapshot, Credit credit) {
+    String storedName = snapshot.getString("clientName");
+    if (StringUtils.hasText(storedName)) {
+      return storedName;
+    }
+    return String.join(" ", Stream.of(
+            credit.getClientFirstName(),
+            credit.getClientSecondName(),
+            credit.getClientFirstSurname(),
+            credit.getClientSecondSurname())
+        .filter(StringUtils::hasText)
+        .toList());
+  }
+
+  private String resolveSearchKey(String storedValue, String source) {
+    return StringUtils.hasText(storedValue) ? storedValue : InputNormalizer.searchKey(source);
   }
 
   private BigDecimal bigDecimal(Object value) {

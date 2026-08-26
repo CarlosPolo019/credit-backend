@@ -64,7 +64,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
   private LimitScope resolveScope(HttpServletRequest request) {
     String path = request.getRequestURI();
     String method = request.getMethod();
-    if (HttpMethod.POST.matches(method) && "/api/v1/auth/login".equals(path)) {
+    if (HttpMethod.POST.matches(method)
+        && ("/api/v1/auth/login".equals(path) || "/api/v1/auth/register".equals(path))) {
       return new LimitScope("login", loginLimit);
     }
     if (HttpMethod.POST.matches(method) && "/api/v1/credits".equals(path)) {

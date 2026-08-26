@@ -17,10 +17,11 @@ Spring Boot backend for the Fya credit technical test.
 mvn spring-boot:run
 ```
 
-The demo login defaults to `demo / demo12345` only when `DEMO_USER_PASSWORD_HASH` is empty. Production should set a BCrypt hash.
+Users can register with document and password. The demo login defaults to `demo / demo12345` only when `DEMO_USER_PASSWORD_HASH` is empty and remains available as a fallback.
 
 ## API
 - `POST /api/v1/auth/login`
+- `POST /api/v1/auth/register`
 - `POST /api/v1/credits`
 - `GET /api/v1/credits`
 - `GET /api/v1/credits/{id}`
@@ -35,6 +36,7 @@ Credit routes require `Authorization: Bearer <token>`.
 Collections:
 - `credits`
 - `email_jobs`
+- `users`
 
 Operational credit reads always return active records only. `DELETE` performs a soft delete by setting `isActive=false`, `deletedAt`, and `updatedAt`.
 
@@ -56,7 +58,7 @@ npm install
 npm run seed
 ```
 
-The seed uses the 10 annex records and fills missing document/salesperson values as `SEED-001..SEED-010` and `Comercial Seed`.
+The seed uses the 10 annex records and fills missing document/salesperson values as numeric IDs `100000001..100000010` and `Comercial Seed`.
 
 ## Test And Build
 ```bash
