@@ -9,6 +9,8 @@ docker run --env-file .env -p 8080:8080 credit-backend:local
 ## Render
 Render debe usar las variables de `.env.example`.
 
+El plan gratuito de Render apaga la instancia tras ~15 min sin trafico; el primer request despues de eso puede tardar 50s+ mientras arranca de nuevo (cold start). El workflow `.github/workflows/keep-alive.yml` pinguea `/actuator/health` cada 10 minutos para que nunca llegue a dormirse.
+
 Variables criticas:
 - `JWT_SECRET`
 - `DEMO_USER_USERNAME`
