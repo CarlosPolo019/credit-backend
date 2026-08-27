@@ -165,12 +165,14 @@ Response `200`:
 
 `action` es `UPDATED` o `DELETED`. En `DELETED`, `changes` viene vacio (el registro completo ya quedo inactivo).
 
-## Exportar Credito A PDF
+## Ver Credito En PDF
 `GET /api/v1/credits/{id}/pdf`
 
-Auth requerida. Genera en el servidor (OpenPDF) el mismo certificado de una pagina que `credit-web` genera en el cliente con jsPDF — mismos datos, mismos colores de marca. Pensado para `credit-mobile`, que no tiene una libreria de render de PDF: descarga el binario ya listo en vez de construirlo en el dispositivo.
+Auth requerida. Genera en el servidor (OpenPDF) el mismo certificado de una pagina que `credit-web` genera en el cliente con jsPDF — mismos datos, mismos colores de marca. Pensado para `credit-mobile`, que no tiene una libreria de render de PDF: en vez de descargarlo y compartirlo (poco confiable en dispositivos reales), `credit-mobile` abre esta URL directo en el navegador del sistema.
 
-Response `200`: `application/pdf`, `Content-Disposition: attachment; filename="credito-{id}.pdf"`.
+Unica ruta que, ademas del header `Authorization: Bearer`, tambien acepta el token como query param (`?token=...`) — un tab de navegador no puede mandar headers, asi que `JwtAuthenticationFilter` lo permite solo para esta ruta (ver `PDF_PATH_PATTERN`).
+
+Response `200`: `application/pdf`, `Content-Disposition: inline; filename="credito-{id}.pdf"` (el navegador lo muestra en vez de forzar la descarga).
 
 ## Listar Clientes
 `GET /api/v1/clients`

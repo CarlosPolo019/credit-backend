@@ -105,7 +105,9 @@ public class CreditController {
     return creditService.listAudit(id);
   }
 
-  @Operation(summary = "Download a credit as a branded PDF certificate")
+  @Operation(summary = "View a credit as a branded PDF certificate. Auth also accepts "
+      + "?token= (besides the usual Bearer header), since this is meant to be opened "
+      + "directly in a browser tab, which can't attach headers — see JwtAuthenticationFilter.")
   @GetMapping("/{id}/pdf")
   public ResponseEntity<byte[]> pdf(@PathVariable String id) {
     CreditResponse credit = creditService.getActive(id);
@@ -114,7 +116,7 @@ public class CreditController {
     return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_PDF)
         .header(HttpHeaders.CONTENT_DISPOSITION,
-            ContentDisposition.attachment().filename(filename).build().toString())
+            ContentDisposition.inline().filename(filename).build().toString())
         .body(pdf);
   }
 }
