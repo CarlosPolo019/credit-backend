@@ -20,7 +20,7 @@ También podés abrir directamente `https://fyatest-api.cmescorcia.com`: mientra
 
 Para autenticarte en Swagger: `POST /api/v1/auth/login` con una de las cédulas sembradas (`900100001` / `demo12345`, ver tabla en [Seed](#seed)), copiá el `token` de la respuesta, y pegalo en el botón **Authorize** (arriba a la derecha) como `Bearer <token>`.
 
-Esta misma API es la que consumen `credit-web` ([demo en vivo](../credit-web/README.md#demo-en-vivo)) y `credit-mobile`. Para correr el backend en tu máquina en vez de usar la demo: [Instalación Local](#instalación-local).
+Esta misma API es la que consumen `credit-web` ([demo en vivo](https://github.com/CarlosPolo019/credit-web#demo-en-vivo)) y `credit-mobile`. Para correr el backend en tu máquina en vez de usar la demo: [Instalación Local](#instalación-local).
 
 ## Sobre Esta Prueba Técnica
 
@@ -29,8 +29,8 @@ Este repo es uno de los tres entregables independientes de la prueba técnica de
 | Repo | Rol | README |
 |---|---|---|
 | `credit-backend` (este repo) | API REST, persistencia en Firestore, seguridad JWT, rate limit, worker de correo | — |
-| `credit-web` | Panel administrativo para registrar/consultar créditos y monitorear correos | [`../credit-web/README.md`](../credit-web/README.md) |
-| `credit-mobile` | App Android para el comercial en campo | [`../credit-mobile/README.md`](../credit-mobile/README.md) |
+| `credit-web` | Panel administrativo para registrar/consultar créditos y monitorear correos | [github.com/CarlosPolo019/credit-web](https://github.com/CarlosPolo019/credit-web) |
+| `credit-mobile` | App Android para el comercial en campo | [github.com/CarlosPolo019/credit-mobile](https://github.com/CarlosPolo019/credit-mobile) |
 
 Los tres consumen esta misma API — no hay lógica de negocio duplicada en los frontends.
 
