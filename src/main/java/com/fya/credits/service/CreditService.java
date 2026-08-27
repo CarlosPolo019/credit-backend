@@ -32,6 +32,7 @@ public class CreditService {
   private final EmailJobRepository emailJobRepository;
   private final UserRepository userRepository;
   private final CreditAuditRepository creditAuditRepository;
+  private final ClientService clientService;
   private final Clock clock;
   private final String notificationEmail;
 
@@ -40,12 +41,14 @@ public class CreditService {
       EmailJobRepository emailJobRepository,
       UserRepository userRepository,
       CreditAuditRepository creditAuditRepository,
+      ClientService clientService,
       Clock clock,
       @Value("${app.email.notification-email}") String notificationEmail) {
     this.creditRepository = creditRepository;
     this.emailJobRepository = emailJobRepository;
     this.userRepository = userRepository;
     this.creditAuditRepository = creditAuditRepository;
+    this.clientService = clientService;
     this.clock = clock;
     this.notificationEmail = notificationEmail;
   }
@@ -86,6 +89,7 @@ public class CreditService {
 
     Credit saved = creditRepository.save(credit);
     emailJobRepository.save(emailJobFor(saved, now));
+    clientService.upsert(clientDocument, clientFirstName, clientSecondName, clientFirstSurname, clientSecondSurname);
     return CreditResponse.from(saved);
   }
 
@@ -142,6 +146,7 @@ public class CreditService {
     if (!changes.isEmpty()) {
       creditAuditRepository.save(auditEntry(saved.getId(), "UPDATED", editor, changes));
     }
+    clientService.upsert(clientDocument, clientFirstName, clientSecondName, clientFirstSurname, clientSecondSurname);
     return CreditResponse.from(saved);
   }
 

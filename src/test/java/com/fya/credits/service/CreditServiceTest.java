@@ -35,12 +35,13 @@ class CreditServiceTest {
   @Mock EmailJobRepository emailJobRepository;
   @Mock UserRepository userRepository;
   @Mock CreditAuditRepository creditAuditRepository;
+  @Mock ClientService clientService;
 
   @Test
   void createsCreditAndPendingEmailJob() {
     Clock clock = Clock.fixed(Instant.parse("2026-08-25T20:00:00Z"), ZoneOffset.UTC);
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clock, "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, clock, "fyasocialcapital@gmail.com");
     when(userRepository.findActiveByDocumentNormalized("900100001"))
         .thenReturn(Optional.of(user("900100001", "Carlos Escorcia")));
     when(creditRepository.save(any(Credit.class))).thenAnswer(invocation -> {
@@ -75,12 +76,13 @@ class CreditServiceTest {
     assertThat(jobCaptor.getValue().getCreditId()).isEqualTo("credit-1");
     assertThat(jobCaptor.getValue().getRecipient()).isEqualTo("fyasocialcapital@gmail.com");
     assertThat(jobCaptor.getValue().getSalespersonName()).isEqualTo("Carlos Escorcia");
+    verify(clientService).upsert("100000001", "Pepito", "", "Perez", "");
   }
 
   @Test
   void rejectsNonNumericClientDocument() {
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, Clock.systemUTC(), "fyasocialcapital@gmail.com");
     when(userRepository.findActiveByDocumentNormalized("900100001"))
         .thenReturn(Optional.of(user("900100001", "Carlos Escorcia")));
 
@@ -100,7 +102,7 @@ class CreditServiceTest {
   @Test
   void rejectsCreateWhenAuthenticatedUserIsNotRegistered() {
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, Clock.systemUTC(), "fyasocialcapital@gmail.com");
     when(userRepository.findActiveByDocumentNormalized("999999999"))
         .thenReturn(Optional.empty());
 
@@ -121,7 +123,7 @@ class CreditServiceTest {
   void updatesEditableFieldsAndRecordsAuditEntry() {
     Clock clock = Clock.fixed(Instant.parse("2026-08-25T20:00:00Z"), ZoneOffset.UTC);
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clock, "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, clock, "fyasocialcapital@gmail.com");
     Credit existing = new Credit();
     existing.setId("credit-1");
     existing.setClientFirstName("Pepito");
@@ -161,12 +163,13 @@ class CreditServiceTest {
     assertThat(entry.getChanges()).containsEntry("amount", new CreditAuditEntry.FieldChange("7800000", "9000000"));
     assertThat(entry.getChanges()).containsEntry("termMonths", new CreditAuditEntry.FieldChange("10", "12"));
     assertThat(entry.getChanges()).doesNotContainKey("clientFirstName");
+    verify(clientService).upsert("100000001", "Pepito", "", "Perez", "");
   }
 
   @Test
   void skipsAuditEntryWhenUpdateDoesNotChangeAnything() {
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, Clock.systemUTC(), "fyasocialcapital@gmail.com");
     Credit existing = new Credit();
     existing.setId("credit-1");
     existing.setClientFirstName("Pepito");
@@ -191,7 +194,7 @@ class CreditServiceTest {
   @Test
   void rejectsUpdateWhenCreditDoesNotExist() {
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, Clock.systemUTC(), "fyasocialcapital@gmail.com");
     when(creditRepository.findActiveById("missing")).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.update("missing", new CreateCreditRequest(
@@ -204,7 +207,7 @@ class CreditServiceTest {
   void deleteRecordsAuditEntry() {
     Clock clock = Clock.fixed(Instant.parse("2026-08-25T20:00:00Z"), ZoneOffset.UTC);
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clock, "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, clock, "fyasocialcapital@gmail.com");
     Credit existing = new Credit();
     existing.setId("credit-1");
     existing.setIsActive(true);
@@ -224,7 +227,7 @@ class CreditServiceTest {
   @Test
   void rejectsArbitrarySortFields() {
     CreditService service = new CreditService(
-        creditRepository, emailJobRepository, userRepository, creditAuditRepository, Clock.systemUTC(), "fyasocialcapital@gmail.com");
+        creditRepository, emailJobRepository, userRepository, creditAuditRepository, clientService, Clock.systemUTC(), "fyasocialcapital@gmail.com");
 
     assertThatThrownBy(() -> service.list(null, null, null, "clientName", "desc"))
         .isInstanceOf(BadRequestException.class);
