@@ -23,11 +23,12 @@ public class JwtService {
     this.expirationMinutes = expirationMinutes;
   }
 
-  public TokenResult createToken(String subject) {
+  public TokenResult createToken(String subject, String role) {
     Instant now = Instant.now();
     Instant expiresAt = now.plus(expirationMinutes, ChronoUnit.MINUTES);
     String token = Jwts.builder()
         .subject(subject)
+        .claim("role", role)
         .issuedAt(Date.from(now))
         .expiration(Date.from(expiresAt))
         .signWith(key)
@@ -35,15 +36,18 @@ public class JwtService {
     return new TokenResult(token, expiresAt);
   }
 
-  public String validateAndGetSubject(String token) {
+  public TokenClaims validate(String token) {
     Claims claims = Jwts.parser()
         .verifyWith(key)
         .build()
         .parseSignedClaims(token)
         .getPayload();
-    return claims.getSubject();
+    return new TokenClaims(claims.getSubject(), claims.get("role", String.class));
   }
 
   public record TokenResult(String token, Instant expiresAt) {
+  }
+
+  public record TokenClaims(String subject, String role) {
   }
 }

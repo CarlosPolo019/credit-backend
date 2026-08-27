@@ -41,7 +41,7 @@ class AuthServiceTest {
     AuthService service = service("");
     when(userRepository.findByDocumentNormalized("123456789")).thenReturn(Optional.empty());
     when(userRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
-    when(jwtService.createToken("123456789")).thenReturn(new JwtService.TokenResult("jwt", EXPIRES_AT));
+    when(jwtService.createToken("123456789", "USER")).thenReturn(new JwtService.TokenResult("jwt", EXPIRES_AT));
 
     LoginResponse response = service.register(new RegisterRequest(
         "  Maria   Perez  ",
@@ -88,7 +88,7 @@ class AuthServiceTest {
     AuthService service = service("");
     when(userRepository.findActiveByDocumentNormalized("123456789"))
         .thenReturn(Optional.of(user("123456789", "secret123")));
-    when(jwtService.createToken("123456789")).thenReturn(new JwtService.TokenResult("jwt", EXPIRES_AT));
+    when(jwtService.createToken("123456789", "USER")).thenReturn(new JwtService.TokenResult("jwt", EXPIRES_AT));
 
     LoginResponse response = service.login(new LoginRequest("123456789", "secret123"));
 
@@ -111,7 +111,7 @@ class AuthServiceTest {
   void keepsDemoUserFallback() {
     AuthService service = service("");
     when(userRepository.findActiveByDocumentNormalized("demo")).thenReturn(Optional.empty());
-    when(jwtService.createToken("demo")).thenReturn(new JwtService.TokenResult("demo-jwt", EXPIRES_AT));
+    when(jwtService.createToken("demo", "USER")).thenReturn(new JwtService.TokenResult("demo-jwt", EXPIRES_AT));
 
     LoginResponse response = service.login(new LoginRequest("demo", "demo12345"));
 

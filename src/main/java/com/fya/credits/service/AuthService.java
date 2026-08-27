@@ -85,7 +85,7 @@ public class AuthService {
     if (!demoUsername.equals(username) || !demoPasswordMatches(password)) {
       throw new BadCredentialsException("Invalid credentials");
     }
-    JwtService.TokenResult token = jwtService.createToken(username);
+    JwtService.TokenResult token = jwtService.createToken(username, "USER");
     return new LoginResponse(
         token.token(),
         "Bearer",
@@ -94,7 +94,7 @@ public class AuthService {
   }
 
   private LoginResponse responseFor(AppUser user) {
-    JwtService.TokenResult token = jwtService.createToken(user.getDocumentNormalized());
+    JwtService.TokenResult token = jwtService.createToken(user.getDocumentNormalized(), user.getRole());
     return new LoginResponse(
         token.token(),
         "Bearer",

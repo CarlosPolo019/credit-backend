@@ -33,16 +33,25 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
             .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            .requestMatchers("/api/v1/email-jobs/**").hasRole("ADMIN")
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)
-        .exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, ex) -> {
-          response.setStatus(401);
-          response.setContentType("application/json");
-          response.getWriter().write("""
-              {"status":401,"code":"UNAUTHORIZED","message":"Authentication is required"}
-              """);
-        }))
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint((request, response, ex) -> {
+              response.setStatus(401);
+              response.setContentType("application/json");
+              response.getWriter().write("""
+                  {"status":401,"code":"UNAUTHORIZED","message":"Authentication is required"}
+                  """);
+            })
+            .accessDeniedHandler((request, response, ex) -> {
+              response.setStatus(403);
+              response.setContentType("application/json");
+              response.getWriter().write("""
+                  {"status":403,"code":"FORBIDDEN","message":"No tienes permiso para acceder a este recurso"}
+                  """);
+            }))
         .build();
   }
 
