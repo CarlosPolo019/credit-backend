@@ -53,11 +53,11 @@ Los tres consumen esta misma API — no hay lógica de negocio duplicada en los 
 
 ```mermaid
 flowchart LR
-  web["credit-web · React admin"] -->|REST + JWT| api["credit-backend · Spring Boot"]
-  mobile["credit-mobile · React Native"] -->|REST + JWT| api
-  api --> firestore[("Cloud Firestore")]
-  api -->|encola EmailJob| worker["Email Worker (programado)"]
-  worker --> resend["Resend"]
+  WEB[credit-web] --> API[credit-backend]
+  MOBILE[credit-mobile] --> API
+  API --> DB[Cloud Firestore]
+  API --> WORKER[Email Worker]
+  WORKER --> RESEND[Resend]
 ```
 
 Login (`POST /api/v1/auth/login`) busca la cédula en `users`; si no la encuentra, compara contra el usuario demo configurable en vez de fallar — detalle en [`docs/api.md`](docs/api.md).
@@ -67,19 +67,19 @@ Login (`POST /api/v1/auth/login`) busca la cédula en `users`; si no la encuentr
 ```mermaid
 sequenceDiagram
   participant Client
-  participant API as credit-backend
-  participant DB as Firestore
-  participant Worker as Email Worker
+  participant API
+  participant DB
+  participant Worker
   participant Resend
-  Client->>API: POST /api/v1/credits (Bearer JWT)
-  API->>DB: resolver comercial en users (subject del JWT)
-  API->>DB: guardar Credit + EmailJob(PENDING)
-  API->>DB: upsert Client (clients/{documentNormalized})
-  API-->>Client: 201 CreditResponse
-  Worker->>DB: buscar EmailJob elegible
-  Worker->>Resend: enviar notificación
-  Resend-->>Worker: ok / error
-  Worker->>DB: marcar SENT o RETRY/FAILED
+  Client->>API: POST credits with JWT
+  API->>DB: Resolve salesperson
+  API->>DB: Save credit and pending email job
+  API->>DB: Upsert client
+  API-->>Client: Return 201 response
+  Worker->>DB: Find pending jobs
+  Worker->>Resend: Send email
+  Resend-->>Worker: Return result
+  Worker->>DB: Mark sent retry or failed
 ```
 
 El `upsert Client` no es una dependencia dura: si falla, se loguea y el crédito se guarda igual (ver `ClientService.upsert`). Antes de este paso, el frontend suele haber llamado `GET /api/v1/clients` para autocompletar el nombre si la cédula ya existía — pero el backend sincroniza `clients` en cada creación/edición independientemente de eso.
@@ -220,10 +220,10 @@ Producción corre en Render bajo el dominio propio `https://fyatest-api.cmescorc
 
 ```mermaid
 flowchart LR
-  dev["git push main"] --> ci["Backend CI (valida, no despliega)"]
-  operator["Run workflow (manual)"] --> deploy["Deploy Backend"]
-  deploy -->|POST Deploy Hook| render["Render redespliega"]
-  render --> prod["fyatest-api.cmescorcia.com"]
+  PUSH[git push main] --> CI[Backend CI]
+  RUN[Run workflow] --> DEPLOY[Deploy Backend]
+  DEPLOY --> RENDER[Render deploy hook]
+  RENDER --> PROD[Production API]
 ```
 
 Para desplegar: GitHub → **Actions** → **Deploy Backend** → **Run workflow**. Detalles (secrets, dominio/DNS, variables de Render): [`docs/deployment.md`](docs/deployment.md).
