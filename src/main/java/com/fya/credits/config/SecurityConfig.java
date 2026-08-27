@@ -34,6 +34,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
             .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
             .requestMatchers("/api/v1/email-jobs/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole("ADMIN")
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterAfter(rateLimitFilter, JwtAuthenticationFilter.class)

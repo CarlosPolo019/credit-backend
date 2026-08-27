@@ -137,12 +137,13 @@ Solo necesario si querés correr el backend en tu máquina en vez de usar la [de
 
 ## API
 
-Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-jobs/**` requieren `Authorization: Bearer <token>`. `/api/v1/email-jobs/**` además requiere rol `ADMIN` (`403` para cualquier otra cuenta) — hoy solo la cuenta `900100001` (Carlos Escorcia) tiene ese rol; ver [Roles](#roles).
+Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-jobs/**` requieren `Authorization: Bearer <token>`. `/api/v1/email-jobs/**` y `POST /api/v1/users` además requieren rol `ADMIN` (`403` para cualquier otra cuenta) — hoy solo la cuenta `900100001` (Carlos Escorcia) tiene ese rol; ver [Roles](#roles).
 
 | Método | Ruta | Auth | Qué hace |
 |---|---|---|---|
-| POST | `/api/v1/auth/register` | Pública | Crea un usuario por cédula |
+| POST | `/api/v1/auth/register` | Pública | Auto-registro: crea un usuario `USER` por cédula y devuelve su sesión (token) |
 | POST | `/api/v1/auth/login` | Pública | Emite un JWT (cédula o usuario demo) |
+| POST | `/api/v1/users` | Bearer + `ADMIN` | Un admin crea la cuenta de otra persona (`role` opcional, default `USER`); no emite sesión para la cuenta creada |
 | POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)`; sincroniza el cliente en `clients` |
 | POST | `/api/v1/credits/estimate` | Bearer | Cuota mensual y total estimados sin guardar nada |
 | GET | `/api/v1/credits` | Bearer | Lista créditos activos (filtros + orden) |
@@ -159,8 +160,9 @@ Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-j
 ## Roles
 
 `AppUser.role` viaja en el JWT y Spring Security lo usa para autorizar (`ROLE_<role>`, ver `security/JwtAuthenticationFilter.java` y `config/SecurityConfig.java`). Hoy solo distingue `ADMIN` de `USER`:
-- `ADMIN`: única cuenta seed con este rol es `900100001` (Carlos Escorcia). Puede ver Correos y Clientes en `credit-web` (`/api/v1/email-jobs` lo exige en el backend; `/clients` no lo exige en el backend, pero `credit-web` solo muestra esa vista a `ADMIN`).
-- `USER`: todas las demás cuentas (Jennifer Navarro, Adriana Castellano, cualquiera que se registre por `/api/v1/auth/register`, el usuario demo). Pueden crear/editar/eliminar créditos igual que siempre — el rol solo restringe Correos.
+- `ADMIN`: única cuenta seed con este rol es `900100001` (Carlos Escorcia). Puede ver Correos, Clientes y Usuarios en `credit-web` (`/api/v1/email-jobs` y `POST /api/v1/users` lo exigen en el backend; `/clients` no lo exige en el backend, pero `credit-web` solo muestra esa vista a `ADMIN`).
+- `USER`: todas las demás cuentas (Jennifer Navarro, Adriana Castellano, cualquiera que se registre por `/api/v1/auth/register` o que un admin cree por `/api/v1/users`, el usuario demo). Pueden crear/editar/eliminar créditos igual que siempre — el rol solo restringe Correos, Clientes y Usuarios.
+- `POST /api/v1/users` es la única forma de que una cuenta nueva termine siendo `ADMIN` sin editar Firestore a mano — y solo puede usarla alguien que ya es `ADMIN` (el endpoint entero exige ese rol antes de mirar el body). `POST /api/v1/auth/register` (auto-registro público) siempre crea `USER`, sin excepción.
 
 Formatos completos de request/response y códigos de error: [`docs/api.md`](docs/api.md).
 

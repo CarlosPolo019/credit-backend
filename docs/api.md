@@ -193,6 +193,32 @@ Response `200`: `ClientResponse[]`:
 
 Cada credito creado o editado (`POST`/`PUT /api/v1/credits`) sincroniza (upsert) el cliente detras de esa cedula — asi la coleccion se mantiene al dia sin importar si el frontend uso el autocomplete o tipeo todo de cero.
 
+## Crear Usuario (Admin)
+`POST /api/v1/users`
+
+Auth requerida, rol `ADMIN` (`403` para cualquier otro rol autenticado, `401` sin token — mismo trato que `/api/v1/email-jobs/**`). Distinto de `POST /api/v1/auth/register`: ese sigue siendo publico y solo crea `role: "USER"`; este es una accion de administrador para crear la cuenta de otra persona (usado por `credit-web` en `/users`, para crear comerciales de prueba).
+
+Request:
+```json
+{
+  "fullName": "Maria Perez",
+  "document": "123456789",
+  "password": "secret123",
+  "role": "USER"
+}
+```
+`role` es opcional (`"ADMIN"` o `"USER"`, default `"USER"` si se omite). Como el endpoint entero ya exige `ADMIN`, no hay riesgo de que una cuenta no-admin se autoasigne `ADMIN`: solo alguien ya autenticado como admin puede llegar a mandar este campo.
+
+Response `201`:
+```json
+{
+  "document": "123456789",
+  "fullName": "Maria Perez",
+  "role": "USER"
+}
+```
+A diferencia de `/api/v1/auth/register`, esta respuesta **no** incluye `token` ni forma de `LoginResponse` — no inicia sesion para la cuenta creada, es una accion administrativa, no un login.
+
 ## Listar Trabajos De Correo
 `GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`
 
@@ -235,7 +261,7 @@ Response `200`: `EmailJobListResponse`:
 ## Errores
 - `400`: validacion o query no permitida.
 - `401`: credenciales invalidas o token ausente/invalido.
-- `403`: autenticado pero sin el rol requerido (hoy solo `/api/v1/email-jobs/**`, requiere `ADMIN`).
+- `403`: autenticado pero sin el rol requerido (`/api/v1/email-jobs/**` y `POST /api/v1/users`, ambos requieren `ADMIN`).
 - `409`: cedula ya registrada.
 - `404`: credito inexistente o inactivo.
 - `429`: rate limit.
