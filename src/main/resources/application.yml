@@ -39,6 +39,7 @@ app:
     client-email: ${FIREBASE_CLIENT_EMAIL:}
     private-key: ${FIREBASE_PRIVATE_KEY:}
     service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
+    health-timeout-seconds: ${FIRESTORE_HEALTH_TIMEOUT_SECONDS:15}
   resend:
     api-key: ${RESEND_API_KEY:}
     base-url: ${RESEND_BASE_URL:https://api.resend.com}

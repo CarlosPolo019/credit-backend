@@ -16,6 +16,7 @@ Variables criticas:
 - `DEMO_USER_USERNAME`
 - `DEMO_USER_PASSWORD_HASH`
 - `FIREBASE_*`
+- `FIRESTORE_HEALTH_TIMEOUT_SECONDS` — default `15`; evita falsos negativos del health check cuando Firestore tarda al arrancar despues de un deploy/cold start.
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL`
 - `RESEND_FROM_NAME`

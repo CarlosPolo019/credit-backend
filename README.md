@@ -8,7 +8,7 @@ No hace falta instalar nada para probar la API — ya está desplegada:
 
 - **API**: `https://fyatest-api.cmescorcia.com`
 - **Swagger UI**: **[https://fyatest-api.cmescorcia.com/swagger-ui/index.html](https://fyatest-api.cmescorcia.com/swagger-ui/index.html)** — probá los endpoints directo desde el navegador
-- **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health) — no es solo "¿está vivo el proceso?", incluye si Firestore realmente responde
+- **Health check**: [https://fyatest-api.cmescorcia.com/actuator/health](https://fyatest-api.cmescorcia.com/actuator/health) — no es solo "¿está vivo el proceso?", incluye si Firestore realmente responde, con timeout configurable para tolerar cold starts
 
 ### Si la API está inactiva
 
@@ -174,7 +174,7 @@ El envío del correo es asíncrono: `POST /credits` nunca espera a Resend.
 
 El correo es HTML con la identidad visual de `credit-web` (verde `#00d280`, tinta `#052224`, logo) e incluye un botón que redirige a `APP_FRONTEND_BASE_URL/credits/{creditId}` para ver el detalle completo del crédito en el panel.
 
-Variables de Resend requeridas: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`, `APP_FRONTEND_BASE_URL`. En producción, `RESEND_FROM_EMAIL` debe usar un dominio verificado en Resend para evitar rechazos 403. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
+Variables de Resend requeridas: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`, `CREDIT_NOTIFICATION_EMAIL`, `APP_FRONTEND_BASE_URL`. En producción, `RESEND_FROM_EMAIL` debe usar un dominio verificado en Resend para evitar rechazos 403. `FIRESTORE_HEALTH_TIMEOUT_SECONDS` controla cuánto espera el health check profundo por Firestore antes de reportar `DOWN`. Detalle del flujo: [`docs/email-worker.md`](docs/email-worker.md).
 
 ## Seed
 
