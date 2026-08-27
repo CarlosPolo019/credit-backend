@@ -3,37 +3,8 @@
 ## Base
 - Version: `/api/v1`
 - Auth: JWT Bearer para rutas de creditos.
-- Publicos: `/api/v1/auth/register`, `/api/v1/auth/login`, `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**`.
-
-## Registro
-`POST /api/v1/auth/register`
-
-Request:
-```json
-{
-  "fullName": "Maria Perez",
-  "document": "123456789",
-  "password": "secret123"
-}
-```
-
-Response `201`:
-```json
-{
-  "token": "<jwt>",
-  "tokenType": "Bearer",
-  "expiresAt": "2026-08-25T20:00:00Z",
-  "user": {
-    "username": "123456789",
-    "fullName": "Maria Perez",
-    "document": "123456789",
-    "role": "USER"
-  }
-}
-```
-
-El documento normalizado es unico y se usa como subject del JWT.
-`document` solo acepta digitos en registro.
+- Publicos: `/api/v1/auth/login`, `/actuator/health`, `/swagger-ui/**`, `/v3/api-docs/**`.
+- Sin auto-registro: no existe una ruta publica para crear cuentas. Toda cuenta se crea con `POST /api/v1/users` (admin-only, ver mas abajo) — esto reemplazo al viejo `POST /api/v1/auth/register`, que se elimino.
 
 ## Login
 `POST /api/v1/auth/login`
@@ -198,7 +169,7 @@ Cada credito creado o editado (`POST`/`PUT /api/v1/credits`) sincroniza (upsert)
 ## Crear Usuario (Admin)
 `POST /api/v1/users`
 
-Auth requerida, rol `ADMIN` (`403` para cualquier otro rol autenticado, `401` sin token — mismo trato que `/api/v1/email-jobs/**`). Distinto de `POST /api/v1/auth/register`: ese sigue siendo publico y solo crea `role: "USER"`; este es una accion de administrador para crear la cuenta de otra persona (usado por `credit-web` en `/users`, para crear comerciales de prueba).
+Auth requerida, rol `ADMIN` (`403` para cualquier otro rol autenticado, `401` sin token — mismo trato que `/api/v1/email-jobs/**`). Unica forma de crear una cuenta (no hay auto-registro publico) — usado por `credit-web` en `/users`, para crear comerciales de prueba o, si hace falta, otro admin.
 
 Request:
 ```json
@@ -219,7 +190,7 @@ Response `201`:
   "role": "USER"
 }
 ```
-A diferencia de `/api/v1/auth/register`, esta respuesta **no** incluye `token` ni forma de `LoginResponse` — no inicia sesion para la cuenta creada, es una accion administrativa, no un login.
+Esta respuesta **no** incluye `token` ni forma de `LoginResponse` — no inicia sesion para la cuenta creada, es una accion administrativa, no un login.
 
 ## Listar Trabajos De Correo
 `GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`
