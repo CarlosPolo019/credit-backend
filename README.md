@@ -38,10 +38,10 @@ Los tres consumen esta misma API — no hay lógica de negocio duplicada en los 
 
 ```mermaid
 flowchart LR
-  web["credit-web<br/>React admin"] -->|REST + JWT| api["credit-backend<br/>Spring Boot"]
-  mobile["credit-mobile<br/>React Native"] -->|REST + JWT| api
+  web["credit-web · React admin"] -->|REST + JWT| api["credit-backend · Spring Boot"]
+  mobile["credit-mobile · React Native"] -->|REST + JWT| api
   api --> firestore[("Cloud Firestore")]
-  api -->|encola EmailJob| worker["Email Worker<br/>(programado)"]
+  api -->|encola EmailJob| worker["Email Worker (programado)"]
   worker --> resend["Resend"]
 ```
 
@@ -209,8 +209,8 @@ Producción corre en Render bajo el dominio propio `https://fyatest-api.cmescorc
 
 ```mermaid
 flowchart LR
-  dev["git push main"] --> ci["Backend CI<br/>(valida, no despliega)"]
-  operator["Run workflow<br/>(manual)"] --> deploy["Deploy Backend"]
+  dev["git push main"] --> ci["Backend CI (valida, no despliega)"]
+  operator["Run workflow (manual)"] --> deploy["Deploy Backend"]
   deploy -->|POST Deploy Hook| render["Render redespliega"]
   render --> prod["fyatest-api.cmescorcia.com"]
 ```
