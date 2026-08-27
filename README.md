@@ -60,23 +60,7 @@ flowchart LR
   worker --> resend["Resend"]
 ```
 
-### Login (con fallback demo)
-
-```mermaid
-sequenceDiagram
-  participant Client
-  participant API as credit-backend
-  participant DB as Firestore (users)
-  Client->>API: POST /api/v1/auth/login {username, password}
-  API->>DB: findActiveByDocumentNormalized(username)
-  alt usuario registrado
-    DB-->>API: AppUser
-    API->>API: verificar password (BCrypt)
-  else no encontrado
-    API->>API: comparar con usuario demo configurado
-  end
-  API-->>Client: 200 {token, tokenType, expiresAt, user}
-```
+Login (`POST /api/v1/auth/login`) busca la cédula en `users`; si no la encuentra, compara contra el usuario demo configurable en vez de fallar — detalle en [`docs/api.md`](docs/api.md).
 
 ### Registro de crédito → notificación por correo
 
@@ -174,9 +158,8 @@ Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-j
 ## Roles
 
 `AppUser.role` viaja en el JWT y Spring Security lo usa para autorizar (`ROLE_<role>`, ver `security/JwtAuthenticationFilter.java` y `config/SecurityConfig.java`). Hoy solo distingue `ADMIN` de `USER`:
-- `ADMIN`: única cuenta seed con este rol es `900100001` (Carlos Escorcia). Puede ver Correos, Clientes y Usuarios en `credit-web` (`/api/v1/email-jobs` y `POST /api/v1/users` lo exigen en el backend; `/clients` no lo exige en el backend, pero `credit-web` solo muestra esa vista a `ADMIN`).
+- `ADMIN`: única cuenta seed con este rol es `900100001` (Carlos Escorcia). Puede ver Correos, Clientes y Usuarios en `credit-web` (`/api/v1/email-jobs` y `POST /api/v1/users` lo exigen en el backend; `/clients` no lo exige en el backend, pero `credit-web` solo muestra esa vista a `ADMIN`). Es también la única cuenta que puede llamar `POST /api/v1/users` — la única forma de crear una cuenta nueva (no hay auto-registro público) o de que otra termine siendo `ADMIN`.
 - `USER`: todas las demás cuentas (Jennifer Navarro, Adriana Castellano, cualquiera que un admin cree por `/api/v1/users`, el usuario demo). Pueden crear/editar/eliminar créditos igual que siempre — el rol solo restringe Correos, Clientes y Usuarios.
-- `POST /api/v1/users` es la única forma de crear una cuenta (no hay auto-registro público) y la única forma de que una cuenta nueva termine siendo `ADMIN` sin editar Firestore a mano — y solo puede usarla alguien que ya es `ADMIN` (el endpoint entero exige ese rol antes de mirar el body).
 
 Formatos completos de request/response y códigos de error: [`docs/api.md`](docs/api.md).
 
