@@ -57,6 +57,7 @@ for (const user of users) {
   });
 }
 
+const clientsByDocument = new Map();
 for (const item of credits) {
   const ref = db.collection("credits").doc(item.id);
   const clientName = fullName(item);
@@ -82,7 +83,29 @@ for (const item of credits) {
     updatedAt: now,
     deletedAt: null,
   });
+
+  // One client per cédula, derived from the credit(s) that use it — keeps
+  // the "clients" collection (used by the credit form's autocomplete)
+  // populated from the very first seed, without depending on the app's
+  // own write-through to have run yet.
+  const clientDocument = String(item.clientDocument);
+  const clientDocumentNormalized = normalize(clientDocument);
+  clientsByDocument.set(clientDocumentNormalized, {
+    document: clientDocument,
+    documentNormalized: clientDocumentNormalized,
+    firstName: item.clientFirstName || "",
+    secondName: item.clientSecondName || "",
+    firstSurname: item.clientFirstSurname || "",
+    secondSurname: item.clientSecondSurname || "",
+    fullName: clientName,
+    fullNameNormalized: normalize(clientName),
+  });
+}
+
+for (const client of clientsByDocument.values()) {
+  const ref = db.collection("clients").doc(client.documentNormalized);
+  batch.set(ref, { ...client, id: client.documentNormalized, createdAt: now, updatedAt: now });
 }
 
 await batch.commit();
-console.log(`Seeded ${users.length} users and ${credits.length} credits.`);
+console.log(`Seeded ${users.length} users, ${credits.length} credits and ${clientsByDocument.size} clients.`);
