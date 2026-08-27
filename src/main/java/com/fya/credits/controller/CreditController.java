@@ -1,10 +1,13 @@
 package com.fya.credits.controller;
 
 import com.fya.credits.dto.request.CreateCreditRequest;
+import com.fya.credits.dto.request.EstimateCreditRequest;
 import com.fya.credits.dto.response.CreditAuditEntryResponse;
 import com.fya.credits.dto.response.CreditListResponse;
 import com.fya.credits.dto.response.CreditResponse;
+import com.fya.credits.dto.response.EstimateCreditResponse;
 import com.fya.credits.exception.BadRequestException;
+import com.fya.credits.service.CreditPaymentEstimator;
 import com.fya.credits.service.CreditPdfService;
 import com.fya.credits.service.CreditService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,6 +50,14 @@ public class CreditController {
     }
     CreditResponse response = creditService.create(request, authentication.getName());
     return ResponseEntity.created(URI.create("/api/v1/credits/" + response.id())).body(response);
+  }
+
+  @Operation(summary = "Estimate the monthly installment and total payoff without saving anything")
+  @PostMapping("/estimate")
+  public EstimateCreditResponse estimate(@Valid @RequestBody EstimateCreditRequest request) {
+    CreditPaymentEstimator.Estimate estimate =
+        CreditPaymentEstimator.estimate(request.amount(), request.interestRate(), request.termMonths());
+    return new EstimateCreditResponse(estimate.monthlyPayment(), estimate.totalToPay());
   }
 
   @Operation(summary = "List active credits with filters and controlled sorting")

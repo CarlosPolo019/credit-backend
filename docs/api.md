@@ -87,6 +87,30 @@ El comercial se toma del subject del JWT, se consulta en `users` y se guarda com
 
 Response `201`: `CreditResponse`. Tambien crea un `EmailJob(PENDING)`.
 
+`CreditResponse` (usado por crear, listar, obtener, editar) incluye `estimatedMonthlyPayment` y `estimatedTotalToPay` — la cuota mensual y el total a pagar estimados (amortizacion francesa, tasa mensual fija), calculados una sola vez en el backend para que `credit-web` y `credit-mobile` muestren siempre el mismo numero en vez de recalcularlo cada uno.
+
+## Estimar Cuota (Sin Guardar)
+`POST /api/v1/credits/estimate`
+
+Auth requerida. Mismo calculo que `estimatedMonthlyPayment`/`estimatedTotalToPay`, pero sin crear ni tocar ningun credito — pensado para el paso de confirmacion del formulario, antes de que el operador registre el credito.
+
+Request:
+```json
+{
+  "amount": 7800000,
+  "interestRate": 2,
+  "termMonths": 10
+}
+```
+
+Response `200`:
+```json
+{
+  "monthlyPayment": 868347,
+  "totalToPay": 8683469
+}
+```
+
 ## Listar Creditos
 `GET /api/v1/credits?clientName=&clientDocument=&salesperson=&sortBy=createdAt&direction=desc`
 

@@ -15,8 +15,6 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -165,8 +163,6 @@ public class CreditPdfService {
     PdfPTable table = new PdfPTable(2);
     table.setWidthPercentage(100);
 
-    BigDecimal[] estimate = estimatePayment(credit);
-
     PdfPTable left = new PdfPTable(1);
     left.addCell(plainCell("Comercial", nullToDash(credit.salespersonName())));
     left.addCell(plainCell("Tasa de interés mensual", credit.interestRate() + "%"));
@@ -174,8 +170,8 @@ public class CreditPdfService {
 
     PdfPTable right = new PdfPTable(1);
     right.addCell(plainCell("Fecha de registro", formatDate(credit.createdAt())));
-    right.addCell(plainCell("Cuota mensual estimada", formatCurrency(estimate[0])));
-    right.addCell(plainCell("Total estimado a pagar", formatCurrency(estimate[1])));
+    right.addCell(plainCell("Cuota mensual estimada", formatCurrency(credit.estimatedMonthlyPayment())));
+    right.addCell(plainCell("Total estimado a pagar", formatCurrency(credit.estimatedTotalToPay())));
 
     PdfPCell leftCell = new PdfPCell(left);
     leftCell.setBorder(0);
@@ -222,33 +218,6 @@ public class CreditPdfService {
     table.addCell(left);
     table.addCell(right);
     return table;
-  }
-
-  private BigDecimal[] estimatePayment(CreditResponse credit) {
-    BigDecimal principal = credit.amount() == null ? BigDecimal.ZERO : credit.amount();
-    BigDecimal months = BigDecimal.valueOf(credit.termMonths() == null ? 0 : credit.termMonths());
-    BigDecimal monthlyRate = (credit.interestRate() == null ? BigDecimal.ZERO : credit.interestRate())
-        .divide(BigDecimal.valueOf(100), MathContext.DECIMAL64);
-
-    if (principal.signum() <= 0 || months.signum() <= 0) {
-      return new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-    }
-
-    BigDecimal monthlyPayment;
-    if (monthlyRate.signum() == 0) {
-      monthlyPayment = principal.divide(months, MathContext.DECIMAL64);
-    } else {
-      double p = principal.doubleValue();
-      double r = monthlyRate.doubleValue();
-      double n = months.doubleValue();
-      double payment = (p * r) / (1 - Math.pow(1 + r, -n));
-      monthlyPayment = BigDecimal.valueOf(payment);
-    }
-    BigDecimal total = monthlyPayment.multiply(months);
-    return new BigDecimal[] {
-        monthlyPayment.setScale(0, RoundingMode.HALF_UP),
-        total.setScale(0, RoundingMode.HALF_UP),
-    };
   }
 
   private String clientFullName(CreditResponse credit) {

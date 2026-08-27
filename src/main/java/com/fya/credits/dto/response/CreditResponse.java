@@ -1,6 +1,7 @@
 package com.fya.credits.dto.response;
 
 import com.fya.credits.model.Credit;
+import com.fya.credits.service.CreditPaymentEstimator;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -21,8 +22,12 @@ public record CreditResponse(
     Boolean isActive,
     Instant createdAt,
     Instant updatedAt,
-    Instant deletedAt) {
+    Instant deletedAt,
+    BigDecimal estimatedMonthlyPayment,
+    BigDecimal estimatedTotalToPay) {
   public static CreditResponse from(Credit credit) {
+    CreditPaymentEstimator.Estimate estimate =
+        CreditPaymentEstimator.estimate(credit.getAmount(), credit.getInterestRate(), credit.getTermMonths());
     return new CreditResponse(
         credit.getId(),
         credit.getClientFirstName(),
@@ -40,6 +45,8 @@ public record CreditResponse(
         credit.getIsActive(),
         credit.getCreatedAt(),
         credit.getUpdatedAt(),
-        credit.getDeletedAt());
+        credit.getDeletedAt(),
+        estimate.monthlyPayment(),
+        estimate.totalToPay());
   }
 }

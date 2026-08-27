@@ -141,6 +141,7 @@ Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Aut
 | POST | `/api/v1/auth/register` | Pública | Crea un usuario por cédula |
 | POST | `/api/v1/auth/login` | Pública | Emite un JWT (cédula o usuario demo) |
 | POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)` |
+| POST | `/api/v1/credits/estimate` | Bearer | Cuota mensual y total estimados sin guardar nada |
 | GET | `/api/v1/credits` | Bearer | Lista créditos activos (filtros + orden) |
 | GET | `/api/v1/credits/{id}` | Bearer | Obtiene un crédito activo |
 | PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito |
