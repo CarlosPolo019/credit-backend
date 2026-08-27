@@ -75,12 +75,15 @@ sequenceDiagram
   Client->>API: POST /api/v1/credits (Bearer JWT)
   API->>DB: resolver comercial en users (subject del JWT)
   API->>DB: guardar Credit + EmailJob(PENDING)
+  API->>DB: upsert Client (clients/{documentNormalized})
   API-->>Client: 201 CreditResponse
   Worker->>DB: buscar EmailJob elegible
   Worker->>Resend: enviar notificación
   Resend-->>Worker: ok / error
   Worker->>DB: marcar SENT o RETRY/FAILED
 ```
+
+El `upsert Client` no es una dependencia dura: si falla, se loguea y el crédito se guarda igual (ver `ClientService.upsert`). Antes de este paso, el frontend suele haber llamado `GET /api/v1/clients` para autocompletar el nombre si la cédula ya existía — pero el backend sincroniza `clients` en cada creación/edición independientemente de eso.
 
 ## Stack
 
