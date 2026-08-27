@@ -6,12 +6,14 @@ Guia operativa para agentes que trabajen en `credit-backend`.
 - Stack: Java 21, Spring Boot 3.5.16, Maven, Firestore, Firebase Admin SDK, JWT, Bucket4j, Resend Email API.
 - Paquete base: `com.fya.credits`.
 - Capas activas: `config`, `security`, `controller`, `dto`, `model`, `repository`, `service`, `service/email`, `background`, `exception`.
-- Persistencia: Firestore es la unica fuente de verdad para `credits`, `email_jobs` y `users`.
-- Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente.
+- Persistencia: Firestore es la unica fuente de verdad para `credits`, `email_jobs`, `users` y `clients`.
+- Auth: `POST /api/v1/auth/register` crea usuarios por cedula; `POST /api/v1/auth/login` emite JWT por cedula y conserva fallback demo configurable por ambiente. El JWT lleva el `role` del usuario como claim (`JwtService`); `JwtAuthenticationFilter` lo usa para otorgar `ROLE_<role>`.
+- Roles: `AppUser.role` distingue `ADMIN` (solo el seed `900100001`, Carlos Escorcia) de `USER` (todos los demas). `SecurityConfig` exige `ADMIN` para `/api/v1/email-jobs/**` (403 JSON si no); el resto de la API no discrimina por rol.
 - Creditos: todas las consultas operativas filtran `isActive == true`; `DELETE` es borrado logico.
 - Edicion y auditoria: `PUT /api/v1/credits/{id}` edita datos del cliente y condiciones (nunca el comercial); cada `PUT`/`DELETE` registra una entrada en `credit_audit_logs`, consultable via `GET /api/v1/credits/{id}/audit`.
+- Clientes: `ClientService.upsert(...)` sincroniza la coleccion `clients` (doc ID = documento normalizado, igual que `users`) en cada `POST`/`PUT /api/v1/credits` — evita nombres inconsistentes para la misma cedula entre creditos. `GET /api/v1/clients` expone el listado completo, sin rol requerido (lo consume el autocomplete de cedula de `credit-web`).
 - Email: `POST /credits` crea `EmailJob(PENDING)` y responde sin esperar a Resend; el worker programado envia y marca `SENT`, `RETRY` o `FAILED`. El correo es HTML; el logo usa una URL de produccion fija y el boton de detalle usa `APP_FRONTEND_BASE_URL`.
-- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`; `data/users.json` contiene perfiles comerciales para login.
+- Seed: `scripts/seed-firestore/data/credits.json` contiene el anexo con documentos numericos `100000001..100000010`; `data/users.json` contiene perfiles comerciales para login (Carlos Escorcia con `role: "ADMIN"`); `seed.js` tambien deriva `clients` a partir de los creditos. `wipe.js` borra `credits`+`email_jobs` para arrancar de cero (destructivo, produccion).
 
 ## Protocolo De Inicio
 1. Ejecutar `pwd` y confirmar que estas en `credit-backend`.

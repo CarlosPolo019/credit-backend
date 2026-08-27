@@ -5,6 +5,7 @@
 - `credit_audit_logs/{entryId}`
 - `email_jobs/{jobId}`
 - `users/{documentNormalized}`
+- `clients/{documentNormalized}`
 
 ## `users`
 Campos principales:
@@ -82,6 +83,20 @@ Estados:
 - `SENT`
 - `RETRY`
 - `FAILED`
+
+## `clients`
+Campos principales:
+- `id` (== `documentNormalized`)
+- `document`, `documentNormalized`
+- `firstName`, `secondName`, `firstSurname`, `secondSurname`
+- `fullName`, `fullNameNormalized`
+- `createdAt`, `updatedAt`
+
+Reglas:
+- `documentNormalized` es el ID del documento (mismo esquema que `users`) — lookup O(1), sin scan.
+- Se mantiene sincronizada por `ClientService.upsert(...)`, llamado desde `CreditService.create()`/`update()` en cada `POST`/`PUT /api/v1/credits`; no es una dependencia dura (si falla, se loguea y el credito se guarda igual).
+- `GET /api/v1/clients` la expone completa (sin paginar, dataset chico) — la usa el autocomplete de cedula de `credit-web` y la vista "Clientes" (solo lectura, restringida a `role: "ADMIN"` en el frontend, no en el endpoint).
+- El seed (`scripts/seed-firestore/seed.js`) tambien la puebla, derivandola de `credits.json`.
 
 ## Indices
 `firestore.indexes.json` documenta indices previstos. El repositorio actual filtra texto y ordena parte del resultado en memoria para mantener simple la prueba tecnica.

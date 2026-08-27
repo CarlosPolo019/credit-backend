@@ -134,23 +134,30 @@ Solo necesario si querés correr el backend en tu máquina en vez de usar la [de
 
 ## API
 
-Todas las rutas de `/api/v1/credits/**` y `/api/v1/email-jobs/**` requieren `Authorization: Bearer <token>`.
+Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-jobs/**` requieren `Authorization: Bearer <token>`. `/api/v1/email-jobs/**` además requiere rol `ADMIN` (`403` para cualquier otra cuenta) — hoy solo la cuenta `900100001` (Carlos Escorcia) tiene ese rol; ver [Roles](#roles).
 
 | Método | Ruta | Auth | Qué hace |
 |---|---|---|---|
 | POST | `/api/v1/auth/register` | Pública | Crea un usuario por cédula |
 | POST | `/api/v1/auth/login` | Pública | Emite un JWT (cédula o usuario demo) |
-| POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)` |
+| POST | `/api/v1/credits` | Bearer | Registra un crédito; encola `EmailJob(PENDING)`; sincroniza el cliente en `clients` |
 | POST | `/api/v1/credits/estimate` | Bearer | Cuota mensual y total estimados sin guardar nada |
 | GET | `/api/v1/credits` | Bearer | Lista créditos activos (filtros + orden) |
 | GET | `/api/v1/credits/{id}` | Bearer | Obtiene un crédito activo |
-| PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito |
+| PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito; sincroniza el cliente en `clients` |
 | DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
 | GET | `/api/v1/credits/{id}/audit` | Bearer | Historial de ediciones y borrado de un crédito |
 | GET | `/api/v1/credits/{id}/pdf` | Bearer | Certificado del crédito en PDF (mismo formato que la exportación de `credit-web`) |
-| GET | `/api/v1/email-jobs` | Bearer | Lista trabajos de correo (filtros de estado/búsqueda) |
+| GET | `/api/v1/clients` | Bearer | Lista todos los clientes (cédula + nombre) — alimenta el autocomplete de cédula del formulario de créditos |
+| GET | `/api/v1/email-jobs` | Bearer + `ADMIN` | Lista trabajos de correo (filtros de estado/búsqueda) |
 | GET | `/actuator/health` | Pública | Health check |
 | GET | `/swagger-ui/index.html` | Pública | Documentación interactiva |
+
+## Roles
+
+`AppUser.role` viaja en el JWT y Spring Security lo usa para autorizar (`ROLE_<role>`, ver `security/JwtAuthenticationFilter.java` y `config/SecurityConfig.java`). Hoy solo distingue `ADMIN` de `USER`:
+- `ADMIN`: única cuenta seed con este rol es `900100001` (Carlos Escorcia). Puede ver Correos y Clientes en `credit-web` (`/api/v1/email-jobs` lo exige en el backend; `/clients` no lo exige en el backend, pero `credit-web` solo muestra esa vista a `ADMIN`).
+- `USER`: todas las demás cuentas (Jennifer Navarro, Adriana Castellano, cualquiera que se registre por `/api/v1/auth/register`, el usuario demo). Pueden crear/editar/eliminar créditos igual que siempre — el rol solo restringe Correos.
 
 Formatos completos de request/response y códigos de error: [`docs/api.md`](docs/api.md).
 

@@ -172,10 +172,31 @@ Auth requerida. Genera en el servidor (OpenPDF) el mismo certificado de una pagi
 
 Response `200`: `application/pdf`, `Content-Disposition: attachment; filename="credito-{id}.pdf"`.
 
+## Listar Clientes
+`GET /api/v1/clients`
+
+Auth requerida (cualquier usuario, sin restriccion de rol — lo usa el autocomplete de cedula del formulario de creditos). Devuelve todos los documentos de la coleccion `clients`, sin paginar (dataset chico). `credit-web` restringe la vista "Clientes" (no el endpoint) a cuentas con `role: "ADMIN"`.
+
+Response `200`: `ClientResponse[]`:
+```json
+[
+  {
+    "document": "100000001",
+    "firstName": "Pepito",
+    "secondName": "",
+    "firstSurname": "Perez",
+    "secondSurname": "",
+    "fullName": "Pepito Perez"
+  }
+]
+```
+
+Cada credito creado o editado (`POST`/`PUT /api/v1/credits`) sincroniza (upsert) el cliente detras de esa cedula — asi la coleccion se mantiene al dia sin importar si el frontend uso el autocomplete o tipeo todo de cero.
+
 ## Listar Trabajos De Correo
 `GET /api/v1/email-jobs?status=&search=&sortBy=createdAt&direction=desc`
 
-Auth requerida. Lista toda la coleccion `email_jobs` (no solo los pendientes), pensado para monitoreo/soporte.
+Auth requerida, rol `ADMIN` (`403` para cualquier otro rol autenticado). Lista toda la coleccion `email_jobs` (no solo los pendientes), pensado para monitoreo/soporte.
 
 Query params:
 - `status`: uno de `PENDING`, `PROCESSING`, `SENT`, `RETRY`, `FAILED`. Omitir para traer todos.
@@ -214,6 +235,7 @@ Response `200`: `EmailJobListResponse`:
 ## Errores
 - `400`: validacion o query no permitida.
 - `401`: credenciales invalidas o token ausente/invalido.
+- `403`: autenticado pero sin el rol requerido (hoy solo `/api/v1/email-jobs/**`, requiere `ADMIN`).
 - `409`: cedula ya registrada.
 - `404`: credito inexistente o inactivo.
 - `429`: rate limit.
