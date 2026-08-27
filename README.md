@@ -172,6 +172,7 @@ Formatos completos de request/response y códigos de error: [`docs/api.md`](docs
 | `credits` | Créditos registrados (borrado lógico vía `isActive=false`) |
 | `credit_audit_logs` | Auditoría: quién editó/eliminó cada crédito y qué campos cambiaron |
 | `email_jobs` | Cola de notificaciones que procesa el worker programado |
+| `clients` | Un documento por cédula (nombre completo), sincronizado desde cada crédito creado/editado — alimenta el autocomplete de cédula y la vista Clientes |
 
 Detalles e invariantes de campos: [`docs/firestore.md`](docs/firestore.md).
 
