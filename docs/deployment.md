@@ -9,7 +9,7 @@ docker run --env-file .env -p 8080:8080 credit-backend:local
 ## Render
 Render debe usar las variables de `.env.example`.
 
-El plan gratuito de Render apaga la instancia tras ~15 min sin trafico; el primer request despues de eso puede tardar 50s+ mientras arranca de nuevo (cold start). El workflow `.github/workflows/keep-alive.yml` pinguea `/actuator/health` cada 10 minutos para que nunca llegue a dormirse.
+El plan gratuito de Render apaga la instancia tras ~15 min sin trafico; el primer request despues de eso puede tardar 50s+ mientras arranca de nuevo (cold start). Se probo un workflow de GitHub Actions (`schedule` cada 10 min pingueando `/actuator/health`) para evitarlo, pero el cron de GitHub Actions no es confiable para intervalos cortos en repos con poca actividad (llego a pasar 6+ horas sin dispararse ni una vez) — se elimino. En su lugar, `credit-web` y `credit-mobile` manejan el cold start en el cliente: si el health check no responde rapido, muestran una pantalla de carga que reintenta contra `/actuator/health` hasta que el backend responde (ver `credit-web/document/agents/` y `credit-mobile/knowledge/`).
 
 Variables criticas:
 - `JWT_SECRET`

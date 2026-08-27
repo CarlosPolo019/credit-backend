@@ -12,7 +12,7 @@ No hace falta instalar nada para probar la API — ya está desplegada:
 
 ### Si la API está inactiva
 
-El backend corre en Render y puede entrar en reposo si pasa un rato sin recibir tráfico. En ese caso, el primer request después de la inactividad puede tardar mientras la instancia vuelve a arrancar. Si el panel web, Swagger o la app mobile muestran un error temporal de conexión, esperá un momento y reintentá.
+El backend corre en Render y puede entrar en reposo si pasa un rato sin recibir tráfico. En ese caso, el primer request después de la inactividad puede tardar mientras la instancia vuelve a arrancar. `credit-web` y `credit-mobile` lo detectan solos y muestran una pantalla de "despertando el servidor" mientras reintentan; en Swagger, esperá un momento y reintentá manualmente.
 
 También podés abrir directamente `https://fyatest-api.cmescorcia.com`: mientras el servicio despierta, el navegador queda cargando. Cuando termine el arranque, usá el health check o Swagger para confirmar que la API ya responde.
 
