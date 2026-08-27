@@ -2,6 +2,21 @@
 
 API en Spring Boot para la prueba técnica de créditos de Fya Social Capital — autenticación, registro/consulta de créditos y notificaciones por correo asíncronas.
 
+## Índice
+- [Demo En Vivo](#demo-en-vivo)
+- [Sobre Esta Prueba Técnica](#sobre-esta-prueba-técnica)
+- [Arquitectura](#arquitectura)
+- [Stack](#stack)
+- [Instalación Local](#instalación-local)
+- [API](#api)
+- [Roles](#roles)
+- [Firestore](#firestore)
+- [Email Worker](#email-worker)
+- [Seed](#seed)
+- [Test Y Build](#test-y-build)
+- [Deploy](#deploy)
+- [Mapa De Documentación](#mapa-de-documentación)
+
 ## Demo En Vivo
 
 No hace falta instalar nada para probar la API — ya está desplegada:
