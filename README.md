@@ -150,7 +150,7 @@ Todas las rutas de `/api/v1/credits/**`, `/api/v1/clients/**` y `/api/v1/email-j
 | PUT | `/api/v1/credits/{id}` | Bearer | Edita los datos del cliente y las condiciones de un crédito; sincroniza el cliente en `clients` |
 | DELETE | `/api/v1/credits/{id}` | Bearer | Borrado lógico de un crédito |
 | GET | `/api/v1/credits/{id}/audit` | Bearer | Historial de ediciones y borrado de un crédito |
-| GET | `/api/v1/credits/{id}/pdf` | Bearer | Certificado del crédito en PDF (mismo formato que la exportación de `credit-web`) |
+| GET | `/api/v1/credits/{id}/pdf` | Bearer (también acepta `?token=`) | Certificado del crédito en PDF, `Content-Disposition: inline` (mismo formato que la exportación de `credit-web`) |
 | GET | `/api/v1/clients` | Bearer | Lista todos los clientes (cédula + nombre) — alimenta el autocomplete de cédula del formulario de créditos |
 | GET | `/api/v1/email-jobs` | Bearer + `ADMIN` | Lista trabajos de correo (filtros de estado/búsqueda) |
 | GET | `/actuator/health` | Pública | Health check |

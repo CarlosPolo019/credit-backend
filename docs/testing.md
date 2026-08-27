@@ -9,8 +9,6 @@ docker build -t credit-backend:local .
 
 ## Casos Cubiertos
 - Normalizacion de input.
-- Registro de usuario por cedula y password.
-- Rechazo de cedula duplicada.
 - Login de usuario registrado por cedula.
 - Rechazo de password invalido.
 - Fallback del usuario demo.

@@ -56,6 +56,11 @@ Request:
 `clientDocument` solo acepta digitos. El backend guarda los nombres por partes y deriva `clientName` para busqueda, tabla y correo.
 El comercial se toma del subject del JWT, se consulta en `users` y se guarda como `salespersonName`, `salespersonDocument` y `registeredByUserId`.
 
+`amount`, `interestRate` y `termMonths` se validan contra los limites compartidos en `CreditLimits` (usados tambien por `PUT /api/v1/credits/{id}` y por `POST /api/v1/credits/estimate`, para que crear y estimar nunca difieran):
+- `amount`: mayor que 0 y hasta `200000000`.
+- `interestRate`: entre `0.5` y `3.5` (tasa mensual).
+- `termMonths`: entre `1` y `60`.
+
 Response `201`: `CreditResponse`. Tambien crea un `EmailJob(PENDING)`.
 
 `CreditResponse` (usado por crear, listar, obtener, editar) incluye `estimatedMonthlyPayment` y `estimatedTotalToPay` — la cuota mensual y el total a pagar estimados (amortizacion francesa, tasa mensual fija), calculados una sola vez en el backend para que `credit-web` y `credit-mobile` muestren siempre el mismo numero en vez de recalcularlo cada uno.
@@ -63,7 +68,7 @@ Response `201`: `CreditResponse`. Tambien crea un `EmailJob(PENDING)`.
 ## Estimar Cuota (Sin Guardar)
 `POST /api/v1/credits/estimate`
 
-Auth requerida. Mismo calculo que `estimatedMonthlyPayment`/`estimatedTotalToPay`, pero sin crear ni tocar ningun credito — pensado para el paso de confirmacion del formulario, antes de que el operador registre el credito.
+Auth requerida. Mismo calculo que `estimatedMonthlyPayment`/`estimatedTotalToPay`, pero sin crear ni tocar ningun credito — pensado para el paso de confirmacion del formulario, antes de que el operador registre el credito. Mismos limites de `CreditLimits` que `POST /api/v1/credits` (ver arriba).
 
 Request:
 ```json
